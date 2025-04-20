@@ -1,5 +1,6 @@
 import streamlit as st
 from joblib import load
+import pickle
 import re
 import contractions
 from num2words import num2words
@@ -8,7 +9,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 from scipy.sparse import hstack, csr_matrix
-from ._sparsetools import (csr_tocsc, csr_tobsr, csr_count_blocks)
+from scipy.sparse._sparsetools import csr_tocsc, csr_tobsr, csr_count_blocks
 import numpy as np
 import pandas as pd
 import time
@@ -22,13 +23,13 @@ nltk.download("omw-1.4")
 nltk.download("punkt_tab")
 
 # Load models with joblib
-model = load('neural_network.joblib')
-vectorizer = load('vectorizer.joblib')
-label_encoder = load('label_encoder.joblib')
+model = load('neural_network.pkl')
+vectorizer = load('vectorizer.pkl')
+label_encoder = load('label_encoder.pkl')
 
 # Load scaler if exists
 try:
-    scaler = load('scaler.joblib')
+    scaler = load('scaler.pkl')
     scaling_used = True
 except FileNotFoundError:
     scaler = None
