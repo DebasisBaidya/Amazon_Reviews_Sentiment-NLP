@@ -8,7 +8,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 from scipy.sparse import hstack, csr_matrix
-from ._sparsetools import (csr_tocsc, csr_tobsr, csr_count_blocks)
+from scipy.sparse._sparsetools import csr_tocsc, csr_tobsr, csr_count_blocks
 import numpy as np
 import pandas as pd
 import time
