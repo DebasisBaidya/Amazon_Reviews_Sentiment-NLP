@@ -22,13 +22,13 @@ nltk.download("omw-1.4")
 nltk.download("punkt_tab")
 
 # Load models with joblib
-model = load('neural_network.joblib')
-vectorizer = load('vectorizer.joblib')
-label_encoder = load('label_encoder.joblib')
+model = load('neural_network.pkl')
+vectorizer = load('vectorizer.pkl')
+label_encoder = load('label_encoder.pkl')
 
 # Load scaler if exists
 try:
-    scaler = load('scaler.joblib')
+    scaler = load('scaler.pkl')
     scaling_used = True
 except FileNotFoundError:
     scaler = None
