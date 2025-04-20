@@ -1,6 +1,5 @@
 import streamlit as st
 from joblib import load
-import pickle
 import re
 import contractions
 from num2words import num2words
@@ -9,7 +8,6 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 from scipy.sparse import hstack, csr_matrix
-from scipy.sparse._sparsetools import csr_tocsc, csr_tobsr, csr_count_blocks
 import numpy as np
 import pandas as pd
 import time
@@ -20,20 +18,21 @@ nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
 nltk.download("omw-1.4")
-nltk.download("punkt_tab")
 
-# Load models with joblib
-model = load('neural_network.pkl')
-vectorizer = load('vectorizer.pkl')
-label_encoder = load('label_encoder.pkl')
+@st.cache_resource
+def load_models():
+    model = load('neural_network.pkl')
+    vectorizer = load('vectorizer.pkl')
+    label_encoder = load('label_encoder.pkl')
+    try:
+        scaler = load('scaler.pkl')
+        scaling_used = True
+    except FileNotFoundError:
+        scaler = None
+        scaling_used = False
+    return model, vectorizer, label_encoder, scaler, scaling_used
 
-# Load scaler if exists
-try:
-    scaler = load('scaler.pkl')
-    scaling_used = True
-except FileNotFoundError:
-    scaler = None
-    scaling_used = False
+model, vectorizer, label_encoder, scaler, scaling_used = load_models()
 
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
