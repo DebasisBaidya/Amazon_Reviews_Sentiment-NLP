@@ -18,20 +18,21 @@ nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
 nltk.download("omw-1.4")
-nltk.download("punkt_tab")
 
-# Load models with joblib
-model = load('neural_network.pkl')
-vectorizer = load('vectorizer.pkl')
-label_encoder = load('label_encoder.pkl')
+@st.cache_resource
+def load_models():
+    model = load('neural_network.pkl')
+    vectorizer = load('vectorizer.pkl')
+    label_encoder = load('label_encoder.pkl')
+    try:
+        scaler = load('scaler.pkl')
+        scaling_used = True
+    except FileNotFoundError:
+        scaler = None
+        scaling_used = False
+    return model, vectorizer, label_encoder, scaler, scaling_used
 
-# Load scaler if exists
-try:
-    scaler = load('scaler.pkl')
-    scaling_used = True
-except FileNotFoundError:
-    scaler = None
-    scaling_used = False
+model, vectorizer, label_encoder, scaler, scaling_used = load_models()
 
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
