@@ -12,8 +12,9 @@ import numpy as np
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+import os
 
-# NLTK downloads
+# NLTK Downloads
 nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
@@ -24,10 +25,10 @@ def load_models():
     model = load('neural_network.pkl')
     vectorizer = load('vectorizer.pkl')
     label_encoder = load('label_encoder.pkl')
-    try:
-        scaler = load('scaler.pkl')
+    if os.path.exists("scaler.pkl"):
+        scaler = load("scaler.pkl")
         scaling_used = True
-    except FileNotFoundError:
+    else:
         scaler = None
         scaling_used = False
     return model, vectorizer, label_encoder, scaler, scaling_used
@@ -101,7 +102,7 @@ with col_ex2:
         st.session_state.user_input = "Terrible experience. Waste of money."
 
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
-user_input = st.text_area("", value=st.session_state.user_input, height=100, label_visibility="collapsed")
+user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
 
 col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
 with col_btn2:
@@ -111,13 +112,11 @@ with col_btn2:
 
 if clear_clicked:
     st.session_state.user_input = ""
-    user_input = ""
 
 if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review to analyze.")
     else:
-        st.session_state.user_input = user_input
         clean_text = preprocess_review(user_input)
         tfidf_input = vectorizer.transform([clean_text])
 
@@ -133,17 +132,24 @@ if predict_clicked:
 
         probs = model.predict_proba(final_input)[0]
         prediction = model.predict(final_input)[0]
-        label = label_encoder.inverse_transform([prediction])[0]
+
+        label_classes = list(label_encoder.classes_)
+        if isinstance(prediction, (int, np.integer)):
+            label = label_encoder.inverse_transform([prediction])[0]
+        else:
+            label = prediction  # Already string label
 
         user_input_lower = user_input.lower()
+        neutral_index = label_classes.index("Neutral")
+
         if any(keyword in user_input_lower for keyword in neutral_keywords):
             label = 'Neutral'
             confidence = 100.00
-        elif probs[1] >= 0.20:
+        elif probs[neutral_index] >= 0.20:
             label = 'Neutral'
-            confidence = probs[1] * 100
+            confidence = probs[neutral_index] * 100
         else:
-            label_index = list(label_encoder.classes_).index(label)
+            label_index = label_classes.index(label)
             confidence = probs[label_index] * 100
 
         with st.spinner("Analyzing review..."):
@@ -159,10 +165,13 @@ if predict_clicked:
         col_plot, col_meta = st.columns(2)
 
         with col_plot:
-            fig, ax = plt.subplots(figsize=(3, 2.5))
-            ax.pie(probs, labels=label_encoder.classes_, autopct="%1.1f%%", colors=["#8BC34A", "#FFC107", "#FF5252"])
-            ax.axis("equal")
-            st.pyplot(fig)
+            try:
+                fig, ax = plt.subplots(figsize=(3, 2.5))
+                ax.pie(probs, labels=label_classes, autopct="%1.1f%%", colors=["#8BC34A", "#FFC107", "#FF5252"])
+                ax.axis("equal")
+                st.pyplot(fig)
+            except:
+                st.warning("⚠️ Could not render confidence pie chart.")
 
         with col_meta:
             st.markdown(f"""
