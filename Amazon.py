@@ -1,5 +1,6 @@
 import streamlit as st
 from joblib import load
+import pickle
 import re
 import contractions
 from num2words import num2words
@@ -21,14 +22,19 @@ nltk.download("wordnet")
 nltk.download("omw-1.4")
 nltk.download("punkt_tab")
 
-# Load models with joblib
-model = load('neural_network.pkl')
-vectorizer = load('vectorizer.pkl')
-label_encoder = load('label_encoder.pkl')
+# Load pickled components
+with open("vectorizer.pkl", "rb") as f:
+    vectorizer = pickle.load(f)
 
-# Load scaler if exists
+with open("label_encoder.pkl", "rb") as f:
+    label_encoder = pickle.load(f)
+
+with open("neural_network.pkl", "rb") as f:
+    model = pickle.load(f)
+
 try:
-    scaler = load('scaler.pkl')
+    with open("scaler.pkl", "rb") as f:
+        scaler = pickle.load(f)
     scaling_used = True
 except FileNotFoundError:
     scaler = None
