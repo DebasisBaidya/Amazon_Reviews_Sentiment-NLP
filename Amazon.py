@@ -22,19 +22,14 @@ nltk.download("wordnet")
 nltk.download("omw-1.4")
 nltk.download("punkt_tab")
 
-# Load pickled components
-with open("vectorizer.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
+# Load models with joblib
+model = load('neural_network.pkl')
+vectorizer = load('vectorizer.pkl')
+label_encoder = load('label_encoder.pkl')
 
-with open("label_encoder.pkl", "rb") as f:
-    label_encoder = pickle.load(f)
-
-with open("neural_network.pkl", "rb") as f:
-    model = pickle.load(f)
-
+# Load scaler if exists
 try:
-    with open("scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
+    scaler = load('scaler.pkl')
     scaling_used = True
 except FileNotFoundError:
     scaler = None
