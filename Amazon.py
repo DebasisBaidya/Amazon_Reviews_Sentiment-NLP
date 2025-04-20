@@ -1,6 +1,5 @@
 import streamlit as st
 from joblib import load
-import pickle
 import re
 import contractions
 from num2words import num2words
@@ -9,7 +8,6 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 from scipy.sparse import hstack, csr_matrix
-from scipy.sparse._sparsetools import csr_tocsc, csr_tobsr, csr_count_blocks
 import numpy as np
 import pandas as pd
 import time
