@@ -2,6 +2,7 @@ import streamlit as st
 from joblib import load
 import re
 import contractions
+from num2words import num2words
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -18,7 +19,6 @@ nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
 nltk.download("omw-1.4")
-nltk.download("punkt-tab")
 
 @st.cache_resource
 def load_models():
@@ -60,6 +60,11 @@ neutral_keywords = [
     'just fine', 'could be worse', 'not bad, not good', 'somewhat okay', 'meh, could be better',
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
 ]
+
+def convert_ordinals(text):
+    return re.sub(r'\b(\d+)(st|nd|rd|th)\b',
+                  lambda m: num2words(int(m.group(1)), to='ordinal'),
+                  text)
 
 def preprocess_review(review):
     review = str(review).lower()
