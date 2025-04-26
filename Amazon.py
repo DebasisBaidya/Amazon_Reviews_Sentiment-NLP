@@ -156,21 +156,27 @@ if predict_clicked:
             label = prediction
 
         # Adjust for neutral rules
-        neutral_threshold = 0.30  
+        def contains_keyword(text, keywords):
+            for kw in keywords:
+                # Match whole words only
+                if re.search(rf'\b{re.escape(kw)}\b', text):
+                    return True
+            return False
+        
+        neutral_threshold = 0.30
         user_input_lower = user_input.lower()
         
-        # Only force Neutral if neutral_keywords are present AND Neutral prob is not too low
-        force_neutral = any(keyword in user_input_lower for keyword in neutral_keywords) and probs[1] >= 0.30
+        # Check if any neutral keyword is present as a whole word
+        neutral_keyword_present = contains_keyword(user_input_lower, neutral_keywords)
         
-        if force_neutral:
+        # Decide if label should be Neutral based on prob or keyword presence
+        if probs[1] >= neutral_threshold or neutral_keyword_present:
             label = 'Neutral'
             confidence = probs[1] * 100
         else:
-            # Pick the highest probability label normally
             label_index = np.argmax(probs)
             label = label_classes[label_index]
             confidence = probs[label_index] * 100
-
 
 
         st.markdown(f"""
