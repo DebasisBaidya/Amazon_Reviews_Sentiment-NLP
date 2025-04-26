@@ -14,6 +14,9 @@ import time
 import matplotlib.pyplot as plt
 import os
 
+# Set page config as the very first Streamlit command
+st.set_page_config(page_title="Sentiment Classifier", layout="centered")
+
 # NLTK Downloads
 nltk.download("punkt")
 nltk.download("stopwords")
@@ -77,8 +80,6 @@ def preprocess_review(review):
     tokens = word_tokenize(review)
     tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words and (len(w) > 1 or w in {'no', 'ok', 'go'})]
     return ' '.join(tokens)
-
-st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
