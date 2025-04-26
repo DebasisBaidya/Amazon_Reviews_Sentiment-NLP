@@ -126,7 +126,8 @@ with col_btn2:
     clear_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
 if clear_clicked:
-    st.session_state.user_input = ""
+    st.session_state.user_input = ""  # Clears session state input
+    user_input = ""  # Clears the text area input box immediately
 
 if predict_clicked:
     if not user_input.strip():
@@ -154,17 +155,19 @@ if predict_clicked:
         else:
             label = prediction
 
+        # Adjust for neutral rules
+        neutral_threshold = 0.20
         user_input_lower = user_input.lower()
-        neutral_index = label_classes.index("Neutral")
-
-        label_index = label_classes.index(label)
-        confidence = probs[label_index] * 100
-
-        # ✅ Only overwrite to Neutral if BOTH conditions satisfied
-        neutral_threshold = 0.40  # ⬅️ safer threshold, not 0.20
-        if any(keyword in user_input_lower for keyword in neutral_keywords) and probs[neutral_index] >= neutral_threshold:
+        if any(keyword in user_input_lower for keyword in neutral_keywords):
             label = 'Neutral'
-            confidence = probs[neutral_index] * 100
+            confidence = 100.00  # Forced neutral
+        elif probs[1] >= neutral_threshold:  # Assuming index 1 is Neutral
+            label = 'Neutral'
+            confidence = probs[1] * 100
+        else:
+            # Update confidence according to the final label
+            label_index = list(label_encoder.classes_).index(label)
+            confidence = probs[label_index] * 100
 
 
         st.markdown(f"""
