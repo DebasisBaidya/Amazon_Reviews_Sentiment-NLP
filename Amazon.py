@@ -160,7 +160,7 @@ if predict_clicked:
         user_input_lower = user_input.lower()
         
         # Only force Neutral if neutral_keywords are present AND Neutral prob is not too low
-        force_neutral = any(keyword in user_input_lower for keyword in neutral_keywords) and probs[1] >= 0.20
+        force_neutral = any(keyword in user_input_lower for keyword in neutral_keywords) and probs[1] >= 0.30
         
         if force_neutral:
             label = 'Neutral'
