@@ -18,18 +18,27 @@ import os
 nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
+nltk.download("omw-1.4")
 
 @st.cache_resource
 def load_models():
+    required_files = ["neural_network.pkl", "vectorizer.pkl", "label_encoder.pkl"]
+
+    for file in required_files:
+        if not os.path.exists(file):
+            st.error(f"❌ Required file '{file}' not found. Please upload or place it correctly.")
+            st.stop()
+
     model = load('neural_network.pkl')
     vectorizer = load('vectorizer.pkl')
     label_encoder = load('label_encoder.pkl')
+
+    scaler = None
+    scaling_used = False
     if os.path.exists("scaler.pkl"):
         scaler = load("scaler.pkl")
         scaling_used = True
-    else:
-        scaler = None
-        scaling_used = False
+
     return model, vectorizer, label_encoder, scaler, scaling_used
 
 model, vectorizer, label_encoder, scaler, scaling_used = load_models()
@@ -136,7 +145,7 @@ if predict_clicked:
         if isinstance(prediction, (int, np.integer)):
             label = label_encoder.inverse_transform([prediction])[0]
         else:
-            label = prediction  # Already string label
+            label = prediction
 
         user_input_lower = user_input.lower()
         neutral_index = label_classes.index("Neutral")
