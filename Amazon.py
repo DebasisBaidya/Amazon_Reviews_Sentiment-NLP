@@ -18,7 +18,6 @@ import os
 nltk.download("punkt")
 nltk.download("stopwords")
 nltk.download("wordnet")
-nltk.download("omw-1.4")
 
 @st.cache_resource
 def load_models():
