@@ -160,7 +160,7 @@ if predict_clicked:
         if any(keyword in user_input_lower for keyword in neutral_keywords):
             label = 'Neutral'
             confidence = 100.00
-        elif probs[neutral_index] >= 0.20:
+        elif probs[neutral_index] >= 0.40:
             label = 'Neutral'
             confidence = probs[neutral_index] * 100
         else:
