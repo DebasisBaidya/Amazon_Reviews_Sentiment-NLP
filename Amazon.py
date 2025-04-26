@@ -156,7 +156,7 @@ if predict_clicked:
             label = prediction
 
         # Adjust for neutral rules
-        neutral_threshold = 0.20
+        neutral_threshold = 0.30
         user_input_lower = user_input.lower()
         if any(keyword in user_input_lower for keyword in neutral_keywords):
             label = 'Neutral'
