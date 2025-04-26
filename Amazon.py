@@ -157,18 +157,15 @@ if predict_clicked:
         user_input_lower = user_input.lower()
         neutral_index = label_classes.index("Neutral")
 
-        if any(keyword in user_input_lower for keyword in neutral_keywords):
-            label = 'Neutral'
-            confidence = 100.00
-        elif probs[neutral_index] >= 0.40:
+        label_index = label_classes.index(label)
+        confidence = probs[label_index] * 100
+
+        # ✅ Only overwrite to Neutral if BOTH conditions satisfied
+        neutral_threshold = 0.40  # ⬅️ safer threshold, not 0.20
+        if any(keyword in user_input_lower for keyword in neutral_keywords) and probs[neutral_index] >= neutral_threshold:
             label = 'Neutral'
             confidence = probs[neutral_index] * 100
-        else:
-            label_index = label_classes.index(label)
-            confidence = probs[label_index] * 100
 
-        with st.spinner("Analyzing review..."):
-            time.sleep(1.5)
 
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px;'>
