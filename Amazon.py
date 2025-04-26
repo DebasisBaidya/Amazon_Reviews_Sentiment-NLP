@@ -152,8 +152,8 @@ if predict_clicked:
             label = prediction
 
     if clear_clicked:
-    st.session_state.user_input = ""  # Clears session state input
-    user_input = ""  # Clears the text area input box immediately
+        st.session_state.user_input = ""  # Clears session state input
+        user_input = ""  # Clears the text area input box immediately
 
         # Adjust for neutral rules
         neutral_threshold = 0.30  
