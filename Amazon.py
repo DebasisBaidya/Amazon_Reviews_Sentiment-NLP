@@ -125,6 +125,10 @@ with col_btn2:
     predict_clicked = col1.button("🔍 Predict", use_container_width=True)
     clear_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
+if clear_clicked:
+        st.session_state.user_input = ""  # Clears session state input
+        user_input = ""  # Clears the text area input box immediately
+
 if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review to analyze.")
@@ -150,10 +154,6 @@ if predict_clicked:
             label = label_encoder.inverse_transform([prediction])[0]
         else:
             label = prediction
-
-    if clear_clicked:
-        st.session_state.user_input = ""  # Clears session state input
-        user_input = ""  # Clears the text area input box immediately
 
         # Adjust for neutral rules
         neutral_threshold = 0.30  
