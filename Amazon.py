@@ -17,8 +17,6 @@ import os
 # Set page config as the very first Streamlit command
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-import nltk
-
 def ensure_nltk_data():
     resources = ["punkt", "stopwords", "wordnet", "omw-1.4", "punkt_tab"]
     for resource in resources:
@@ -105,6 +103,8 @@ st.markdown("""
     <p style='font-size:14px;'>Click any button below to auto-feed the example in the input box.</p>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
