@@ -17,11 +17,17 @@ import os
 # Set page config as the very first Streamlit command
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-# NLTK Downloads
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("wordnet")
-nltk.download("omw-1.4")
+import nltk
+
+def ensure_nltk_data():
+    resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
+    for resource in resources:
+        try:
+            nltk.data.find(f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}")
+        except LookupError:
+            nltk.download(resource)
+
+ensure_nltk_data()
 
 @st.cache_resource
 def load_models():
