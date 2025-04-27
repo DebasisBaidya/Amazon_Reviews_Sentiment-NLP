@@ -199,7 +199,11 @@ if predict_clicked:
 
         # Confidence breakdown (Pie chart)
         with col1:
-            st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
+            with st.container():
+                st.markdown("""
+                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                    <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+                """, unsafe_allow_html=True)
         
             # Create pie chart for confidence breakdown with percentages for each sentiment
             fig, ax = plt.subplots()
@@ -212,27 +216,22 @@ if predict_clicked:
         
         # Review analysis section
         with col2:
-            st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
-            st.markdown(f"""
-            <ul style='font-size:16px; line-height:1.8;'>
-                <li><b>📝 Review Length:</b> {review_len} characters</li>
-                <li><b>📚 Word Count:</b> {word_count}</li>
-                <li><b>❗ Exclamation Marks:</b> {exclam_count}</li>
-                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                <h4 style='text-align:center;'>📊 Tweet Analysis</h4>
+            </div>
             """, unsafe_allow_html=True)
 
-        # Review Metrics
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Review Length", review_len)
-            st.metric("Exclamation Count", exclam_count)
-        with col2:
-            st.metric("Word Count", word_count)
-            st.metric("Emoji Count", emoji_count_val)
-        with col3:
-            st.metric("Sentiment Score", f"{sentiment_score:.2f}")
+            st.markdown(f"""
+                <div style='padding: 12px;'>
+                    <ul style='font-size:16px;'>
+                        <li><b>📝 Review Length:</b> {review_len} characters</li>
+                        <li><b>📚 Word Count:</b> {word_count}</li>
+                        <li><b>❗ Exclamation Marks:</b> {exclam_count}</li>
+                        <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                        <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
+            """, unsafe_allow_html=True)
 
         # Result download
         output_df = pd.DataFrame([{
