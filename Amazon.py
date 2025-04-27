@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from textblob import TextBlob
 import emoji
+import time
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -84,10 +85,24 @@ def preprocess_review(review):
 def analyze_emojis(text):
     return sum(1 for char in text if char in emoji.EMOJI_DATA)
 
+# Handle Neutral Keywords and Confidence Calculation
+def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=0.30):
+    """
+    Modify neutral sentiment detection by lowering the threshold and improving keyword matching.
+    """
+    # Check for any neutral keyword in the review
+    neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
+    
+    # If the neutral keywords are found or model confidence for Neutral is high enough, predict Neutral
+    if neutral_found or probs[1] >= confidence_threshold:
+        return 'Neutral', probs[1] * 100
+    else:
+        return None, None
+
 # Header
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
-    <h1>💬 Amazon Reviews Sentiment Classifier</h1>
+    <h1>💬 Real-time Sentiment Classifier</h1>
     <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
@@ -101,6 +116,8 @@ st.markdown("""
     <p style='font-size:14px;'>Click a button to auto-fill an example review.</p>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)  # Added gap after example section
 
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
@@ -152,11 +169,10 @@ if predict_clicked:
         label_classes = list(label_encoder.classes_)
         label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        # Adjusting for Neutral detection
-        if probs[1] >= 0.30 or any(re.search(rf'\b{re.escape(kw)}\b', user_input.lower()) for kw in neutral_keywords):
-            label = 'Neutral'
-            confidence = probs[1] * 100
-        else:
+        # Handle Neutral Keyword and Confidence
+        label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
+
+        if label is None:  # If neutral wasn't selected by keywords, use the class with highest probability
             confidence = probs[label_classes.index(label)] * 100
 
         sentiment_score = TextBlob(clean_text).sentiment.polarity
@@ -168,7 +184,7 @@ if predict_clicked:
         # -- Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
-            <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
+            <h2 style='color:#0099ff;'> 🔮 Prediction Result</h2>
             <div style='font-size:22px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
                 {emoji_dict[label]} <b>{label}</b> 
                 <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
@@ -187,12 +203,11 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            # Create pie chart for confidence breakdown with probabilities for each sentiment
             fig, ax = plt.subplots(figsize=(1, 1)) 
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = probs  # Using all sentiment probabilities
+            sentiment_probs = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')
             st.pyplot(fig)
 
