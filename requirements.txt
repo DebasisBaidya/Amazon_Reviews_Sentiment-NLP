@@ -8,3 +8,4 @@ nltk
 contractions
 num2words
 joblib
+textblob
