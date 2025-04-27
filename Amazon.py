@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import os
 from textblob import TextBlob
 import emoji
-import time
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -88,7 +87,7 @@ def analyze_emojis(text):
 # Header
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
-    <h1>💬 Real-time Sentiment Classifier</h1>
+    <h1>💬 Amazon Reviews Sentiment Classifier</h1>
     <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
@@ -169,7 +168,7 @@ if predict_clicked:
         # -- Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
-            <h2 style='color:#0099ff;'> 🔮 Prediction Result</h2>
+            <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
             <div style='font-size:22px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
                 {emoji_dict[label]} <b>{label}</b> 
                 <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
@@ -211,7 +210,7 @@ if predict_clicked:
                     <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
                     <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
