@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 import emoji
 import os
-import io
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -87,17 +86,12 @@ def analyze_emojis(text):
 
 # Handle Neutral Keywords and Confidence Calculation
 def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=0.30):
-    """
-    Modify neutral sentiment detection by lowering the threshold and improving keyword matching.
-    """
-    # Check for any neutral keyword in the review
     neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
     
-    # If the neutral keywords are found, predict Neutral with 100% confidence
     if neutral_found:
-        return 'Neutral', 100.0  # Return neutral with 100% confidence if the keyword matches
+        return 'Neutral', 100.0
     elif probs[1] >= confidence_threshold:
-        return 'Neutral', probs[1] * 100  # Otherwise, fall back on model confidence
+        return 'Neutral', probs[1] * 100
     else:
         return None, None
 
@@ -175,7 +169,7 @@ if predict_clicked:
         # Handle Neutral Keyword and Confidence
         label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
-        if label is None:  # If neutral wasn't selected by keywords, use the class with highest probability
+        if label is None:
             confidence = probs[label_classes.index(label)] * 100
 
         sentiment_score = TextBlob(clean_text).sentiment.polarity
@@ -184,89 +178,52 @@ if predict_clicked:
         if label == "Positive":
             st.balloons()
 
-        # -- Prediction result
+        # Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
             <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
             <div style='font-size:20px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
                 {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
             </div>
-            <div style='margin-top: 5px;'>{'✅ Positive review' if label == "Positive" else '🌀 Neutral review' if label == "Neutral" else '⚠️ Negative review'}</div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Confidence Pie Chart - Correct alignment and positioning
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Review Analysis
+        st.markdown(f"""
+        <div style='padding: 12px;'>
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # Confidence Breakdown Section
-        col1, col2 = st.columns([1, 1])  # Side-by-side columns for layout consistency
-        with col1:
-            st.markdown("""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
-                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-            </div>
-            """, unsafe_allow_html=True)
+        # Creating the DataFrame for the result
+        output_df = pd.DataFrame([{
+            "Review": user_input,
+            "Prediction": label,
+            "Confidence": f"{confidence:.2f}%",
+            "Length": review_len,
+            "Word Count": word_count,
+            "Exclamation Count": exclam_count,
+            "Emoji Count": emoji_count_val,
+            "Sentiment Score": sentiment_score
+        }])
 
-            fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
+        # Download button for the result CSV
+        col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+        with col_dl2:
+            st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-            sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]
-            colors = ['#28a745', '#ffc107', '#dc3545']
+        # Footer with the app's information
+        st.markdown("""
+        <div style='text-align:center; padding-top: 10px;'>
+            <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+        </div>
+        """, unsafe_allow_html=True)
 
-            # If the label is Neutral and confidence is 100, we ensure the pie chart reflects this.
-            if label == "Neutral" and confidence == 100.0:
-                sentiment_probs = [probs[0], 100.0, probs[2]]  # Only Neutral has 100% confidence, others remain as model's prob
-            # For Positive and Negative, use the model's predicted confidence
-            # (No changes needed here for Positive/Negative, as the model already gives us the confidence)
-
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
-            ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
-            st.pyplot(fig)
-
-        with col2:
-            # Review analysis section (below the Confidence breakdown)
-            st.markdown("""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
-                <h4 style='text-align:center;'>📊 Review Analysis</h4>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # Display review analysis metrics
-            st.write(f"**Review Length**: {review_len} characters")
-            st.write(f"**Word Count**: {word_count} words")
-            st.write(f"**Exclamation Marks**: {exclam_count}")
-            st.write(f"**Emoji Count**: {emoji_count_val}")
-            st.write(f"**Sentiment Score**: {sentiment_score:.2f}")
-
-        # Download CSV button
-        col_left, col_center, col_right = st.columns([1, 2, 1])  # Ensure this is centered
-        with col_center:
-            if st.button("📥 Download CSV"):
-                # Prepare data for download
-                result_df = pd.DataFrame({
-                    'Review': [user_input],
-                    'Sentiment': [label],
-                    'Confidence (%)': [confidence],
-                    'Sentiment Score': [sentiment_score],
-                    'Review Length': [review_len],
-                    'Word Count': [word_count],
-                    'Exclamation Marks': [exclam_count],
-                    'Emoji Count': [emoji_count_val]
-                })
-
-                # Create a CSV
-                csv = result_df.to_csv(index=False)
-                st.download_button(
-                    label="Download CSV",
-                    data=csv,
-                    file_name="sentiment_analysis_result.csv",
-                    mime="text/csv"
-                )
-
-# Footer
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("""
-<div style='text-align: center; padding: 20px; font-size:14px;'>
-    Powered by Streamlit | Sentiment Analysis Project
-</div>
-""", unsafe_allow_html=True)
+        # Balloons animation for fun
+        st.balloons()
