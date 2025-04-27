@@ -14,29 +14,32 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 import emoji
 import os
+import io
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-# Ensure NLTK resources
+# Ensure NLTK resources are downloaded
 def ensure_nltk_data():
     resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
     for resource in resources:
         try:
+            # Check if resource is already downloaded
             nltk.data.find(f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}")
         except LookupError:
+            # Download if not found
             nltk.download(resource)
 
 ensure_nltk_data()
 
-# Load models
+# Load models with caching to avoid reloading on every rerun
 @st.cache_resource
 def load_models():
     required_files = ["neural_network.pkl", "vectorizer.pkl", "label_encoder.pkl"]
     for file in required_files:
         if not os.path.exists(file):
             st.error(f"❌ Required file '{file}' not found.")
-            st.stop()
+            st.stop()  # Stop app if files missing
     model = load('neural_network.pkl')
     vectorizer = load('vectorizer.pkl')
     label_encoder = load('label_encoder.pkl')
@@ -46,16 +49,18 @@ def load_models():
 
 model, vectorizer, label_encoder, scaler, scaling_used = load_models()
 
-# NLP tools
+# Prepare NLP tools
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
+# Emoji dictionary for display (not used directly here but useful)
 emoji_dict = {
     "Positive": "😃✨💖",
     "Neutral": "😐🌀🤷",
     "Negative": "👿💢👎"
 }
 
+# List of neutral keywords for special handling
 neutral_keywords = [
     'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
     'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
@@ -65,48 +70,45 @@ neutral_keywords = [
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
 ]
 
-# Preprocessing
+# Preprocessing functions
 def convert_ordinals(text):
+    # Convert ordinal numbers like 1st, 2nd to words
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b', lambda m: num2words(int(m.group(1)), to='ordinal'), text)
 
 def preprocess_review(review):
     review = str(review).lower()
-    review = convert_ordinals(review)
-    review = contractions.fix(review)
-    review = re.sub(r"http\S+", "", review)
-    review = re.sub(r'\S*\d\S*', '', review).strip()
-    review = re.sub(r'[^a-zA-Z\s]', ' ', review)
-    review = re.sub(r'(.)\1{2,}', r'\1\1', review)
-    tokens = word_tokenize(review)
+    review = convert_ordinals(review)  # Convert ordinals to words
+    review = contractions.fix(review)  # Expand contractions
+    review = re.sub(r"http\S+", "", review)  # Remove URLs
+    review = re.sub(r'\S*\d\S*', '', review).strip()  # Remove words with digits
+    review = re.sub(r'[^a-zA-Z\s]', ' ', review)  # Remove non-alphabetical characters
+    review = re.sub(r'(.)\1{2,}', r'\1\1', review)  # Limit repeated characters to two
+    tokens = word_tokenize(review)  # Tokenize text
+    # Remove stopwords and keep words with length > 1 or important short words
     tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words and (len(w) > 1 or w in {'no', 'ok', 'go'})]
     return ' '.join(tokens)
 
 def analyze_emojis(text):
+    # Count number of emojis in the text
     return sum(1 for char in text if char in emoji.EMOJI_DATA)
 
-# Handle Neutral Keywords and Confidence Calculation
+# Handle neutral keywords and confidence threshold for neutral class
 def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=0.30):
     neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
     if neutral_found:
-        return 'Neutral', 100.0
+        return 'Neutral', 100.0  # Force Neutral if keyword found
     elif probs[1] >= confidence_threshold:
-        return 'Neutral', probs[1] * 100
+        return 'Neutral', probs[1] * 100  # Neutral if confidence above threshold
     else:
-        return None, None
+        return None, None  # Otherwise no forced neutral
 
 def get_confidence_from_probas(probs, label_classes):
-    label_index = np.argmax(probs)
-    label = label_classes[label_index]
-    confidence = probs[label_index] * 100
+    label_index = np.argmax(probs)  # Get index of highest probability
+    label = label_classes[label_index]  # Corresponding label
+    confidence = probs[label_index] * 100  # Confidence percentage
     return label, confidence
 
-# Initialize session state keys for user input and input widget key
-if "user_input" not in st.session_state:
-    st.session_state["user_input"] = ""
-if "input_key" not in st.session_state:
-    st.session_state["input_key"] = 0
-
-# Header
+# Header section with styled markdown
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
     <h1>💬 Real-time Sentiment Classifier</h1>
@@ -116,7 +118,7 @@ st.markdown("""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Example Buttons
+# Example buttons section to autofill inputs
 st.markdown("""
 <div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
     <h4>📋 Try an example</h4>
@@ -126,68 +128,64 @@ st.markdown("""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
+# Layout columns for example buttons
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
     col1, col2, col3 = st.columns(3)
     if col1.button("😃 Positive"):
-        st.session_state["user_input"] = "Absolutely love this product! Works like a charm."
+        st.session_state.user_input = "Absolutely love this product! Works like a charm."  # Autofill positive example
     if col2.button("😐 Neutral"):
-        st.session_state["user_input"] = "It's okay, nothing too great or too bad."
+        st.session_state.user_input = "It's okay, nothing too great or too bad."  # Autofill neutral example
     if col3.button("👿 Negative"):
-        st.session_state["user_input"] = "Terrible experience. Waste of money."
+        st.session_state.user_input = "Terrible experience. Waste of money."  # Autofill negative example
 
-# Text input with dynamic key to force reset
-user_input = st.text_area(
-    "Enter your review here:",
-    value=st.session_state["user_input"],
-    key=f"user_input_{st.session_state['input_key']}",
-    height=100,
-    label_visibility="visible"
-)
+# Text input area with session state to persist input
+st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
+user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
 
-# Buttons below the input box
+# Buttons for predict and reset with layout columns
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
 with col_center:
     col1, col2 = st.columns(2)
-    predict_clicked = col1.button("🔍 Predict", use_container_width=True)
-    reset_clicked = col2.button("🧹 Reset All", use_container_width=True)
+    predict_clicked = col1.button("🔍 Predict", use_container_width=True)  # Predict button
+    clear_clicked = col2.button("🧹 Reset All", use_container_width=True)  # Reset all button
 
-# Reset logic: clear input and increment input_key to reset widget state
-if reset_clicked:
-    st.session_state["user_input"] = ""
-    st.session_state["input_key"] += 1
+# Reset logic: clear input and local variable user_input
+if clear_clicked:
+    st.session_state.user_input = ""  # Clear session state input
+    user_input = ""  # Clear local variable (not strictly necessary but keeps consistency)
 
-# Prediction
+# Prediction logic triggered by Predict button
 if predict_clicked:
     if not user_input.strip():
-        st.warning("⚠️ Please enter a review.")
+        st.warning("⚠️ Please enter a review.")  # Warn if input empty
     else:
-        clean_text = preprocess_review(user_input)
-        tfidf_input = vectorizer.transform([clean_text])
+        clean_text = preprocess_review(user_input)  # Preprocess input text
+        tfidf_input = vectorizer.transform([clean_text])  # Vectorize text
 
-        review_len = len(clean_text)
-        word_count = len(clean_text.split())
-        exclam_count = user_input.count("!")
-        extra_features = [[review_len, word_count, exclam_count]]
+        review_len = len(clean_text)  # Length of cleaned text
+        word_count = len(clean_text.split())  # Word count
+        exclam_count = user_input.count("!")  # Count exclamation marks
+        extra_features = [[review_len, word_count, exclam_count]]  # Additional engineered features
 
         if scaling_used:
-            extra_features = scaler.transform(extra_features)
-        extra_sparse = csr_matrix(extra_features)
-        final_input = hstack([tfidf_input, extra_sparse])
+            extra_features = scaler.transform(extra_features)  # Scale features if scaler available
+        extra_sparse = csr_matrix(extra_features)  # Convert to sparse matrix
+        final_input = hstack([tfidf_input, extra_sparse])  # Combine features
 
-        probs = model.predict_proba(final_input)[0]
-        prediction = model.predict(final_input)[0]
+        probs = model.predict_proba(final_input)[0]  # Predict probabilities
+        prediction = model.predict(final_input)[0]  # Predict label
 
-        label_classes = list(label_encoder.classes_)
-        label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
+        label_classes = list(label_encoder.classes_)  # Get label classes
+        label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction  # Decode label
 
-        label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
+        label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)  # Check neutral keywords
 
         if label is None:
-            label, confidence = get_confidence_from_probas(probs, label_classes)
+            label, confidence = get_confidence_from_probas(probs, label_classes)  # Get label and confidence from probs
 
-        sentiment_score = TextBlob(clean_text).sentiment.polarity
-        emoji_count_val = analyze_emojis(user_input)
+        sentiment_score = TextBlob(clean_text).sentiment.polarity  # Sentiment polarity score
+        emoji_count_val = analyze_emojis(user_input)  # Count emojis
 
         # Determine display_probs for pie chart based on final label and confidence logic
         if label == "Neutral" and confidence == 100.0:
@@ -196,7 +194,7 @@ if predict_clicked:
         else:
             display_probs = probs
 
-        # Prediction result
+        # Display prediction result with styled HTML
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
             <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
@@ -209,10 +207,10 @@ if predict_clicked:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Create two columns side by side
+        # Create two columns side by side for chart and analysis
         col1, col2 = st.columns(2)
 
-        # Confidence breakdown (Pie chart)
+        # Confidence breakdown pie chart in left column
         with col1:
             with st.container():
                 st.markdown("""
@@ -221,50 +219,15 @@ if predict_clicked:
                 </div>
                 """, unsafe_allow_html=True)
 
-            sentiment_to_idx = {"Positive": 0, "Neutral": 1, "Negative": 2}
-            conf_frac = confidence / 100
-            probs_adj = display_probs.copy()
-            pred_idx = sentiment_to_idx[label]
-            other_indices = [i for i in range(3) if i != pred_idx]
-            other_sum = display_probs[other_indices].sum()
-
-            if other_sum > 0:
-                for i in other_indices:
-                    probs_adj[i] = display_probs[i] * (1 - conf_frac) / other_sum
-            else:
-                for i in other_indices:
-                    probs_adj[i] = 0.0
-
-            probs_adj[pred_idx] = conf_frac
-
-            colors = ['#28a745', '#ffc107', '#dc3545']  # green, yellow, red
-
-            fig, ax = plt.subplots(figsize=(5, 3.5))  # less tall pie chart
-
-            wedges, texts, autotexts = ax.pie(
-                probs_adj,
-                autopct='%1.1f%%',
-                startangle=90,
-                colors=colors,
-                wedgeprops={'edgecolor': 'black'},
-                pctdistance=0.75,
-                labeldistance=1.1
-            )
-
-            # Set font size for labels and autopct
-            for text in texts:
-                text.set_fontsize(12)
-            for autotext in autotexts:
-                autotext.set_fontsize(12)
-                autotext.set_color('black')
-
-            # Add legend with sentiment names and color patches
-            ax.legend(wedges, ["Positive", "Neutral", "Negative"], title="Sentiments", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-
-            ax.axis('equal')
+            fig, ax = plt.subplots()
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [display_probs[0], display_probs[1], display_probs[2]]
+            colors = ['#28a745', '#ffc107', '#dc3545']  # Colors for positive, neutral, negative
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
+            ax.axis('equal')  # Equal aspect ratio ensures pie is circular
             st.pyplot(fig)
 
-        # Review analysis section
+        # Review analysis section in right column
         with col2:
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
@@ -283,7 +246,7 @@ if predict_clicked:
             </ul>
             """, unsafe_allow_html=True)
 
-        # Result download
+        # Prepare DataFrame for download
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
@@ -295,14 +258,16 @@ if predict_clicked:
             "Sentiment Score": sentiment_score
         }])
 
+        # Download button centered in columns
         col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
         with col_dl2:
             st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
+        # Footer note
         st.markdown("""
         <div style='text-align:center; padding-top: 10px;'>
             <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
         </div>
         """, unsafe_allow_html=True)
 
-        st.balloons()
+        st.balloons()  # Celebration animation on prediction
