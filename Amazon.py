@@ -195,6 +195,9 @@ if predict_clicked:
         """, unsafe_allow_html=True)
 
         # Confidence Pie Chart - Correct alignment and positioning
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Confidence Breakdown Section
         col1, col2 = st.columns([1, 1])  # Equal columns for consistency
         with col1:
             st.markdown("""
@@ -233,7 +236,7 @@ if predict_clicked:
                     <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
                     <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
@@ -256,8 +259,3 @@ if predict_clicked:
         with col_dl2:
             st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-            st.markdown("""
-            <div style='text-align:center; padding-top: 10px;'>
-                <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network</span>
-            </div>
-            """, unsafe_allow_html=True)
