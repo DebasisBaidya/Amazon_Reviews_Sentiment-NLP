@@ -121,7 +121,7 @@ if "input_key" not in st.session_state:
 # Header section with styling
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
-    <h1>💬 Real-time Sentiment Classifier</h1>
+    <h1>📦 Amazon Reviews Sentiment Analyzer 🛒💳</h1>
     <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
