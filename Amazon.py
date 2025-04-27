@@ -192,6 +192,7 @@ if predict_clicked:
     else:
         # Show spinner while analyzing
         with st.spinner("Analyzing your review..."):
+            time.sleep(2)
             # Preprocess user input
             clean_text = preprocess_review(user_input)
             tfidf_input = vectorizer.transform([clean_text])  # Vectorize text input
