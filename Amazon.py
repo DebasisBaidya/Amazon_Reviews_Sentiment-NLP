@@ -205,7 +205,7 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Add paragraph break after prediction result
+        # **Add paragraph break after prediction**
         st.markdown("<br><br>", unsafe_allow_html=True)
 
         # Sentiment Explanation
@@ -225,10 +225,10 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Confidence breakdown and review analysis after prediction
+        # **Confidence breakdown and review analysis after prediction**
         col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
-        # Confidence breakdown (Pie chart)
+        # **Confidence breakdown (Pie chart)**
         with col1:
             st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
 
@@ -241,7 +241,7 @@ if predict_clicked:
             ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
             st.pyplot(fig)
 
-        # Review analysis section
+        # **Review analysis section**
         with col2:
             st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
             st.markdown(f"""
@@ -254,7 +254,7 @@ if predict_clicked:
             </ul>
             """, unsafe_allow_html=True)
 
-        # Download button below both columns
+        # **Download button below both columns**
         with st.container():
             col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
             with col_dl2:
@@ -271,6 +271,7 @@ if predict_clicked:
 
                 st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
+                # **"Powered by" in one line**
                 st.markdown("""
                 <div style='text-align:center; padding-top: 10px;'>
                     <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network (MLP) | TF-IDF + Sentiment + Length + Exclamation + Emoji</span>
