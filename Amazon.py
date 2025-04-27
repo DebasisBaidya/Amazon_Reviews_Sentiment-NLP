@@ -182,16 +182,10 @@ if reset_clicked:
     st.session_state["input_key"] += 1  # Increment key to reset text area
     st.session_state["prediction_result"] = None  # Clear prediction result
 
-# Placeholder for analyzing message
-analyzing_placeholder = st.empty()
-
 # Prediction logic triggered on button click
 if predict_clicked:
-    # Show analyzing message
-    analyzing_placeholder.markdown("Analyzing your review...")  
     if not user_input.strip():
         st.warning("⚠️ Please enter a review.")  # Warn if input is empty
-        analyzing_placeholder.empty()  # Clear analyzing message
     else:
         # Preprocess user input
         clean_text = preprocess_review(user_input)
@@ -247,8 +241,6 @@ if predict_clicked:
             "probs": probs,
             "label_classes": label_classes,
         }
-        
-        analyzing_placeholder.empty()  # Clear analyzing message after processing
 
 # If prediction result exists in session state, display results
 if st.session_state["prediction_result"] is not None:
