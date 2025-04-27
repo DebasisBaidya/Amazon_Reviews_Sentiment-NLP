@@ -186,11 +186,10 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(1.5, 2)) 
+            fig, ax = plt.subplots(figsize=(1, 1)) 
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
             colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
+            ax.pie(confidence, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')
             st.pyplot(fig)
 
