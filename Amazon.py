@@ -11,10 +11,9 @@ from scipy.sparse import hstack, csr_matrix
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
 from textblob import TextBlob
 import emoji
-import time
+import os
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -219,19 +218,12 @@ if predict_clicked:
             ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
             st.pyplot(fig)
 
-        # Confidence breakdown and Review analysis columns aligned
+        # Review analysis section (below the Confidence breakdown)
         col1, col2 = st.columns([1, 1])
 
         with col1:
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
-                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with col2:
-            st.markdown("""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
                 <h4 style='text-align:center;'>📊 Review Analysis</h4>
             </div>
             """, unsafe_allow_html=True)
@@ -242,7 +234,7 @@ if predict_clicked:
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
                     <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
-                    <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                    <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
             </div>
@@ -266,6 +258,6 @@ if predict_clicked:
 
             st.markdown("""
             <div style='text-align:center; padding-top: 10px;'>
-                <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network (MLP) | TF-IDF + Extra Features</span>
+                <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network</span>
             </div>
             """, unsafe_allow_html=True)
