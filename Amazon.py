@@ -12,14 +12,14 @@ import numpy as np
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
-import os
 from textblob import TextBlob
-import emoji  # For emoji counting
+import emoji
+import os
 
-# Set Streamlit page config
+# --- Page config ---
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-# Ensure NLTK data is downloaded
+# --- Ensure necessary nltk data ---
 def ensure_nltk_data():
     resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
     for resource in resources:
@@ -30,7 +30,7 @@ def ensure_nltk_data():
 
 ensure_nltk_data()
 
-# Load models
+# --- Load models ---
 @st.cache_resource
 def load_models():
     required_files = ["neural_network.pkl", "vectorizer.pkl", "label_encoder.pkl"]
@@ -42,34 +42,23 @@ def load_models():
     vectorizer = load('vectorizer.pkl')
     label_encoder = load('label_encoder.pkl')
     scaler = load("scaler.pkl") if os.path.exists("scaler.pkl") else None
-    scaling_used = scaler is not None
-    return model, vectorizer, label_encoder, scaler, scaling_used
+    return model, vectorizer, label_encoder, scaler
 
-model, vectorizer, label_encoder, scaler, scaling_used = load_models()
+model, vectorizer, label_encoder, scaler = load_models()
 
-# Initialize utilities
+# --- Preprocessing functions ---
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
-emoji_dict = {
-    "Positive": "😃✨💖",
-    "Neutral": "😐🌀🤷",
-    "Negative": "👿💢👎"
-}
-
 neutral_keywords = [
     'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
-    'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
-    'couldn’t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
-    'passable', 'acceptable', 'not great', 'nothing remarkable', 'alright-ish',
-    'just fine', 'could be worse', 'not bad, not good', 'somewhat okay',
-    'meh, could be better', 'nothing to complain about', 'barely noticeable',
-    'average at best', 'mediocre at best', 'tolerable'
+    'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better'
 ]
 
-# Helper Functions
 def convert_ordinals(text):
-    return re.sub(r'\b(\d+)(st|nd|rd|th)\b', lambda m: num2words(int(m.group(1)), to='ordinal'), text)
+    return re.sub(r'\b(\d+)(st|nd|rd|th)\b',
+                  lambda m: num2words(int(m.group(1)), to='ordinal'),
+                  text)
 
 def preprocess_review(review):
     review = str(review).lower()
@@ -92,56 +81,55 @@ def contains_keyword(text, keywords):
             return True
     return False
 
-# Initialize session state
+# --- Session State for input ---
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 
-# UI: Page Heading
+# --- Main Heading ---
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
     <h1>💬 Real-time Sentiment Classifier</h1>
-    <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
+    <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, 
+    <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
 
-# UI: Example Buttons
-with st.container():
-    st.markdown("""
-    <div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
-        <h4>📋 Try an example</h4>
-        <p style='font-size:14px;'>Click any button below to auto-fill the input box.</p>
-    </div>
-    """, unsafe_allow_html=True)
+# --- Example Reviews ---
+st.markdown("""
+<div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
+    <h4>📋 Try an example</h4>
+    <p style='font-size:14px;'>Click any button below to auto-feed the example in the input box.</p>
+</div>
+""", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
-    with col_ex2:
-        col1, col2, col3 = st.columns(3)
-        if col1.button("😃 Positive"):
-            st.session_state.user_input = "Absolutely love this product! Works like a charm."
-        if col2.button("😐 Neutral"):
-            st.session_state.user_input = "It's okay, nothing too great or too bad."
-        if col3.button("😠 Negative"):
-            st.session_state.user_input = "Terrible experience. Waste of money."
+col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
+with col_ex2:
+    col1, col2, col3 = st.columns(3)
+    if col1.button("😃 Positive"):
+        st.session_state.user_input = "Absolutely love this product! Works like a charm."
+    if col2.button("😐 Neutral"):
+        st.session_state.user_input = "It's okay, nothing too great or too bad."
+    if col3.button("😠 Negative"):
+        st.session_state.user_input = "Terrible experience. Waste of money."
 
-# UI: Input Text Box
 st.markdown("<br>", unsafe_allow_html=True)
+
+# --- User Input ---
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
 
-# UI: Predict and Reset Buttons
+# --- Predict and Reset Buttons ---
 col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
 with col_btn2:
     col1, col2 = st.columns(2)
     predict_clicked = col1.button("🔍 Predict", use_container_width=True)
     clear_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
-# Reset logic
 if clear_clicked:
     st.session_state.user_input = ""
     user_input = ""
 
-# Prediction logic
+# --- Prediction Logic ---
 if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review to analyze.")
@@ -152,56 +140,39 @@ if predict_clicked:
         review_len = len(clean_text)
         word_count = len(clean_text.split())
         exclam_count = user_input.count("!")
-        extra_features = [[review_len, word_count, exclam_count]]
+        emoji_count_val = analyze_emojis(user_input)
 
-        if scaling_used:
+        extra_features = [[review_len, word_count, exclam_count]]
+        if scaler:
             extra_features = scaler.transform(extra_features)
         extra_sparse = csr_matrix(extra_features)
         final_input = hstack([tfidf_input, extra_sparse])
 
         probs = model.predict_proba(final_input)[0]
         prediction = model.predict(final_input)[0]
-
         label_classes = list(label_encoder.classes_)
-        if isinstance(prediction, (int, np.integer)):
-            label = label_encoder.inverse_transform([prediction])[0]
-        else:
-            label = prediction
+        label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        # Adjust for neutral
-        neutral_threshold = 0.30
         user_input_lower = user_input.lower()
         neutral_keyword_present = contains_keyword(user_input_lower, neutral_keywords)
-
-        if probs[1] >= neutral_threshold or neutral_keyword_present:
+        if probs[1] >= 0.30 or neutral_keyword_present:
             label = 'Neutral'
-            confidence = probs[1] * 100
-        else:
-            confidence = probs[label_classes.index(label)] * 100
 
+        confidence = probs[label_classes.index(label)] * 100
         sentiment_score = TextBlob(clean_text).sentiment.polarity
-        emoji_count_val = analyze_emojis(user_input)
 
-        # Output Section
-        col1, col2 = st.columns(2)
+        # Define tone
+        tone = "Positive" if sentiment_score > 0.2 else "Negative" if sentiment_score < -0.2 else "Neutral"
 
-        with col1:
-            st.markdown("""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
-                <h4 style='text-align:center;'>📊 Review Analysis</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown(f"""
-            <ul style='font-size:16px; line-height:1.8;'>
-                <li><b>📝 Review Length:</b> {review_len} characters</li>
-                <li><b>📚 Word Count:</b> {word_count}</li>
-                <li><b>❗ Exclamation Marks:</b> {exclam_count}</li>
-                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
-            """, unsafe_allow_html=True)
+        # Guess likely about
+        blob = TextBlob(user_input)
+        likely_about = ", ".join(blob.noun_phrases) if blob.noun_phrases else "General Product Experience"
 
-        with col2:
+        # --- Results Display ---
+        col_left, col_right = st.columns(2)
+
+        # --- Confidence Breakdown (Left) ---
+        with col_left:
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
@@ -211,50 +182,66 @@ if predict_clicked:
             labels = ['Positive', 'Neutral', 'Negative']
             sizes = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+            wedges, texts, autotexts = ax.pie(
+                sizes, labels=[f"{l} {s*100:.1f}%" for l, s in zip(labels, sizes)],
+                colors=colors, startangle=90, textprops=dict(color="black", weight='bold'),
+                autopct=None
+            )
             ax.axis('equal')
             st.pyplot(fig)
 
-        # Create output DataFrame
+        # --- Review Analysis (Right) ---
+        with col_right:
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
+                <h4 style='text-align:center;'>📊 Review Analysis</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.write(f"**Prediction:** `{label}`")
+            st.write(f"**Confidence:** `{confidence:.2f}%`")
+            st.write(f"**Tone:** `{tone}`")
+            st.write(f"**Likely About:** `{likely_about}`")
+            st.write("---")
+            st.write(f"**📝 Review Length:** {review_len} characters")
+            st.write(f"**📚 Word Count:** {word_count}")
+            st.write(f"**❗❗ Exclamation Marks:** {exclam_count}")
+            st.write(f"**😃 Emoji Count:** {emoji_count_val}")
+            st.write(f"**❤️ Sentiment Score:** {sentiment_score:.3f}")
+
+        # --- Download Button ---
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
             "Confidence": f"{confidence:.2f}%",
+            "Tone": tone,
+            "Likely About": likely_about,
             "Length": review_len,
             "Word Count": word_count,
             "Exclamation Count": exclam_count,
             "Emoji Count": emoji_count_val,
             "Sentiment Score": sentiment_score
         }])
-
-        # Download Button
+        st.markdown("<br>", unsafe_allow_html=True)
         col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
         with col_dl2:
             st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-        # Footer
-        st.markdown("""
-        <div style='text-align:center; padding-top: 10px;'>
-            <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
-        </div>
-        """, unsafe_allow_html=True)
-
         st.balloons()
 
-        # Custom button styling
-        st.markdown("""
-        <style>
-        div[data-testid="stDownloadButton"] > button {
-            background-color: #ff4b4b;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        div[data-testid="stDownloadButton"] > button:hover {
-            background-color: #ff1a1a;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+# --- Custom Styling ---
+st.markdown("""
+<style>
+div[data-testid="stDownloadButton"] > button {
+    background-color: #ff4b4b;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+div[data-testid="stDownloadButton"] > button:hover {
+    background-color: #ff1a1a;
+}
+</style>
+""", unsafe_allow_html=True)
