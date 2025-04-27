@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from textblob import TextBlob
 import emoji
+import time
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -162,18 +163,20 @@ if predict_clicked:
         if label == "Positive":
             st.balloons()
 
-        # Display prediction
+        # -- Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
             <h2 style='color:#0099ff;'>🔮 Prediction Result</h2>
-            <div style='font-size:24px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
+            <div style='font-size:22px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
                 {emoji_dict[label]} <b>{label}</b> 
                 <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Layout for confidence and review analysis
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Two columns: Confidence breakdown + Review analysis
         col1, col2 = st.columns(2)
 
         with col1:
@@ -182,7 +185,7 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(2.5, 2))
+            fig, ax = plt.subplots(figsize=(2.5, 2)) 
             sentiments = ["Positive", "Neutral", "Negative"]
             sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
             colors = ['#28a745', '#ffc107', '#dc3545']
@@ -199,14 +202,14 @@ if predict_clicked:
                 <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                    <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
 
-        # Save results
+        # Download Result Button
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
