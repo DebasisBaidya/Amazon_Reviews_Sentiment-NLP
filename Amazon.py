@@ -181,7 +181,7 @@ with col_center:
 # Reset logic: clear input and prediction result on reset
 if reset_clicked:
     st.session_state["user_input"] = ""
-    st.session_state["input_key"] += 1
+    st.session_state["input_key"] += 1  # Increment key to reset text area
     st.session_state["prediction_result"] = None  # Clear prediction result on reset
 
 # Prediction logic triggered on button click
@@ -377,8 +377,7 @@ if st.session_state["prediction_result"] is not None:
     st.markdown("""
     <div style='text-align:center; padding-top: 10px;'>
         <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
-    </div>
-    """, unsafe_allow_html=True)
+    </div
 
     # Celebrate prediction with balloons animation
     st.balloons()
