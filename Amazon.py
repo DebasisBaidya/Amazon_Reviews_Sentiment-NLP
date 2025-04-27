@@ -101,6 +101,13 @@ def get_confidence_from_probas(probs, label_classes):
     confidence = probs[label_index] * 100
     return label, confidence
 
+# Initialize session state keys for controlled input and reset flag
+if "user_input" not in st.session_state:
+    st.session_state["user_input"] = ""
+
+if "reset_triggered" not in st.session_state:
+    st.session_state["reset_triggered"] = False
+
 # Header
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
@@ -125,15 +132,11 @@ col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
     col1, col2, col3 = st.columns(3)
     if col1.button("😃 Positive"):
-        st.session_state.user_input = "Absolutely love this product! Works like a charm."
+        st.session_state["user_input"] = "Absolutely love this product! Works like a charm."
     if col2.button("😐 Neutral"):
-        st.session_state.user_input = "It's okay, nothing too great or too bad."
+        st.session_state["user_input"] = "It's okay, nothing too great or too bad."
     if col3.button("👿 Negative"):
-        st.session_state.user_input = "Terrible experience. Waste of money."
-
-# Text input
-st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
-user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
+        st.session_state["user_input"] = "Terrible experience. Waste of money."
 
 # Buttons
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
@@ -143,8 +146,21 @@ with col_center:
     clear_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
 if clear_clicked:
-    st.session_state.user_input = ""
-    user_input = ""
+    st.session_state["user_input"] = ""
+    st.session_state["reset_triggered"] = True
+
+# Text input with controlled value
+user_input = st.text_area(
+    "",
+    value=st.session_state["user_input"],
+    height=100,
+    key="user_input",
+    label_visibility="collapsed"
+)
+
+# After displaying text area, reset the flag so it only clears once
+if st.session_state["reset_triggered"]:
+    st.session_state["reset_triggered"] = False
 
 # Prediction
 if predict_clicked:
@@ -228,7 +244,7 @@ if predict_clicked:
 
             colors = ['#28a745', '#ffc107', '#dc3545']  # green, yellow, red
 
-            fig, ax = plt.subplots(figsize=(5,5))  # balanced size
+            fig, ax = plt.subplots(figsize=(5, 3.5))  # less tall pie chart
 
             wedges, texts, autotexts = ax.pie(
                 probs_adj,
