@@ -174,23 +174,6 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Sentiment Explanation
-        explanation = ""
-        if label == "Positive":
-            explanation = "This review expresses a positive experience with the product, as reflected by positive words and phrases."
-        elif label == "Negative":
-            explanation = "This review expresses dissatisfaction, highlighting negative aspects or a poor experience."
-        else:
-            explanation = "This review appears neutral, with no strong positive or negative sentiments expressed."
-
-        # Display explanation of the sentiment
-        st.markdown(f"""
-        <div style='padding: 15px; background-color: #f1f3f5; border-radius: 10px; text-align:center;'>
-            <h4>🔍 Why the Sentiment?</h4>
-            <p style='font-size: 16px;'>Explanation: {explanation}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Two columns: Confidence breakdown + Review analysis
