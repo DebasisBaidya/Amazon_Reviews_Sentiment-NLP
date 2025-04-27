@@ -150,7 +150,7 @@ with col_ex2:
 
 # Text input area with dynamic key to allow resetting the widget state
 user_input = st.text_area(
-    "            ✍️ Enter your review here:",
+    "            ✍️ Enter your review here:                ",
     value=st.session_state["user_input"],
     key=f"user_input_{st.session_state['input_key']}",
     height=100,
