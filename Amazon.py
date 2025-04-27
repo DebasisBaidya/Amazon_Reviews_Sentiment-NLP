@@ -118,7 +118,7 @@ with st.container():
 # Add space after text and above buttons
 st.markdown("<br>", unsafe_allow_html=True)
 
-col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])  # Corrected indentation here
+col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
     col1, col2, col3 = st.columns(3)
     if col1.button("😃 Positive"):
@@ -199,8 +199,8 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
-# Side-by-side output boxes
-col1, col2 = st.columns([2, 6])  # Confidence breakdown on left, review analysis on right
+# Side-by-side output boxes with equal width columns
+col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
 # Confidence breakdown with pie chart
 with col1:
