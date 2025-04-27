@@ -56,7 +56,7 @@ emoji = {
 neutral_keywords = [
     'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
     'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
-    'couldn\u2019t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
+    'couldn't care less', 'indifferent', 'okay-ish', 'neither good nor bad',
     'passable', 'acceptable', 'not great', 'nothing remarkable', 'alright-ish',
     'just fine', 'could be worse', 'not bad, not good', 'somewhat okay', 'meh, could be better',
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
@@ -95,6 +95,7 @@ st.markdown("""
 
 # Review Analysis (Right side)
 
+col_1, col_2, col_3 = st.columns([2, 6, 2])
 with col2:
     st.markdown("""
     <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
