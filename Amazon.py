@@ -199,11 +199,11 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
-        # Display prediction result with confidence breakdown
+        # Display prediction result with confidence breakdown in the same line
         st.markdown(f"""
-        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center;'>
-            <h4>🔮 Prediction Result</h4>
-            <p style='font-size: 16px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
+        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
+            <h4 style='margin-right: 20px;'>🔮 Prediction Result</h4>
+            <p style='font-size: 16px; margin-right: 20px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
             <p style='font-size: 14px;'>Confidence: {confidence:.2f}%</p>
         </div>
         """, unsafe_allow_html=True)
