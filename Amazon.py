@@ -125,8 +125,10 @@ with st.container():
         if col3.button("😠 Negative"):
             st.session_state.user_input = "Terrible experience. Waste of money."
 
-# User input text area for entering reviews
+# Add space after text and above buttons
 st.markdown("<br>", unsafe_allow_html=True)
+
+# User input text area for entering reviews
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
 
@@ -185,27 +187,16 @@ if predict_clicked:
 
         if probs[1] >= neutral_threshold or neutral_keyword_present:
             label = 'Neutral'
-            confidence = probs[1] * 100
+            confidence = probs[1] * 100  # Neutral confidence percentage
         else:
-            label_index = np.argmax(probs)
-            label = label_classes[label_index]
-            confidence = probs[label_index] * 100
+            confidence = probs[label_classes.index(label)] * 100
 
-        # Count emojis in the review
-        emoji_count_val = analyze_emojis(user_input)
+        sentiment_score = TextBlob(clean_text).sentiment.polarity  # Sentiment score with TextBlob
 
-        # Calculate sentiment score using TextBlob
-        sentiment_score = TextBlob(clean_text).sentiment.polarity
+        # Emoji count
+        emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
 
-        # Display prediction results
-        st.markdown(f"""
-        <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px;'>
-            <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
-            <div style='font-size:22px;'>{emoji_dict.get(label, '🔍')} Sentiment is <b>{label}</b> <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span></div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Display additional details and analysis
+        # Display the results
         st.markdown(f"""
         <div style='padding: 12px;'>
             <ul style='font-size:16px; line-height:1.8;'>
@@ -218,7 +209,16 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Creating the DataFrame for the result
+        # Create pie chart for confidence breakdown
+        fig, ax = plt.subplots()
+        labels = ['Positive', 'Neutral', 'Negative']
+        sizes = [probs[0], probs[1], probs[2]]
+        colors = ['#28a745', '#ffc107', '#dc3545']
+        ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+        ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        st.pyplot(fig)
+
+        # Create DataFrame for results
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
@@ -230,22 +230,22 @@ if predict_clicked:
             "Sentiment Score": sentiment_score
         }])
 
-        # Download button for the result CSV
+        # Download button for result CSV
         col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
         with col_dl2:
             st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-        # Footer with the app's information
+        # Footer with app info
         st.markdown("""
         <div style='text-align:center; padding-top: 10px;'>
             <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
         </div>
         """, unsafe_allow_html=True)
 
-        # Balloons animation for fun
+        # Balloons animation
         st.balloons()
 
-        # Hide notification content (styling trick)
+        # Hide notification content trick (styling)
         st.markdown("""
         <style>
         canvas:has(+ div[data-testid="stNotificationContent"]) {
@@ -254,7 +254,7 @@ if predict_clicked:
         </style>
         """, unsafe_allow_html=True)
 
-        # Styling for the download button
+        # Custom button styling
         st.markdown("""
         <style>
         div[data-testid="stDownloadButton"] > button {
