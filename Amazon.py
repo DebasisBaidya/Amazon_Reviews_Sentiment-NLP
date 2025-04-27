@@ -70,7 +70,6 @@ neutral_keywords = [
 ]
 
 # Preprocessing functions
-
 def convert_ordinals(text):
     # Convert ordinal numbers (1st, 2nd, etc.) to words (first, second)
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b', lambda m: num2words(int(m.group(1)), to='ordinal'), text)
@@ -149,13 +148,23 @@ with col_ex2:
     if col3.button("👿 Negative"):
         st.session_state["user_input"] = "Terrible experience. Waste of money."
 
-# Text input area with dynamic key to allow resetting the widget state
+# Custom centered, bold label
+st.markdown(
+    """
+    <div style='text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 6px;'>
+        ✍️ Enter Reviews to Classify:
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Text area with hidden label
 user_input = st.text_area(
-    "Enter your review here:",
-    value=st.session_state["user_input"],
-    key=f"user_input_{st.session_state['input_key']}",
+    "",
+    value=st.session_state.get("user_input", ""),
+    key=f"user_input_{st.session_state.get('input_key', 0)}",
     height=100,
-    label_visibility="visible"
+    label_visibility="hidden"
 )
 
 # Buttons below the input box for prediction and reset
