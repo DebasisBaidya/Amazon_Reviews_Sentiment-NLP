@@ -194,31 +194,34 @@ if predict_clicked:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- Confidence Breakdown Header ---
-        st.markdown("""
-        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top:20px;'>
-            <h3 style='text-align:center;'>📊 Confidence Breakdown</h3>
-        </div>
-        """, unsafe_allow_html=True)
+        # Create two columns side by side
+col1, col2 = st.columns(2)
 
-        # Pie chart for confidence
-        fig, ax = plt.subplots(figsize=(5, 5))
-        sentiments = ["Positive", "Neutral", "Negative"]
-        sentiment_probs = [probs[0], probs[1], probs[2]]
-        colors = ["#00C851", "#ffbb33", "#ff4444"]
-
-        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
-        ax.axis('equal')
-        st.pyplot(fig)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # --- Review Analysis Header ---
-        st.markdown("""
-        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top:20px;'>
-            <h3 style='text-align:center;'>🧮 Review Analysis</h3>
-        </div>
-        """, unsafe_allow_html=True)
+        # Confidence breakdown (Pie chart)
+        with col1:
+            st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
+        
+            # Create pie chart for confidence breakdown with percentages for each sentiment
+            fig, ax = plt.subplots()
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [probs[0], probs[1], probs[2]]
+            colors = ['#28a745', '#ffc107', '#dc3545']
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
+            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+            st.pyplot(fig)
+        
+        # Review analysis section
+        with col2:
+            st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
+            """, unsafe_allow_html=True)
 
         # Review Metrics
         col1, col2, col3 = st.columns(3)
