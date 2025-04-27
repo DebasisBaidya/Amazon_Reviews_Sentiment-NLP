@@ -15,10 +15,8 @@ import os
 from textblob import TextBlob
 import emoji
 
-# Set page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-# Ensure necessary nltk data
 def ensure_nltk_data():
     resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
     for resource in resources:
@@ -29,7 +27,6 @@ def ensure_nltk_data():
 
 ensure_nltk_data()
 
-# Load models
 @st.cache_resource
 def load_models():
     required_files = ["neural_network.pkl", "vectorizer.pkl", "label_encoder.pkl"]
@@ -46,11 +43,9 @@ def load_models():
 
 model, vectorizer, label_encoder, scaler, scaling_used = load_models()
 
-# NLP utilities
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
-# Emojis
 emoji_dict = {
     "Positive": "😃✨💖",
     "Neutral": "😐🌀🤷",
@@ -66,7 +61,6 @@ neutral_keywords = [
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
 ]
 
-# Preprocessing
 def convert_ordinals(text):
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b',
                   lambda m: num2words(int(m.group(1)), to='ordinal'),
@@ -87,7 +81,9 @@ def preprocess_review(review):
 def analyze_emojis(text):
     return sum(1 for char in text if char in emoji.EMOJI_DATA)
 
-# UI: Page Heading
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
     <h1>💬 Real-time Sentiment Classifier</h1>
@@ -95,14 +91,15 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Example Buttons
 with st.container():
     st.markdown("""
     <div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
         <h4>📋 Try an example</h4>
-        <p style='font-size:14px;'>Click a button to auto-fill a sample review.</p>
+        <p style='font-size:14px;'>Click any button below to auto-feed the example in the input box.</p>
     </div>
     """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
@@ -114,11 +111,9 @@ with col_ex2:
     if col3.button("👿 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
-# Text Input
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
-user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
+user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
 
-# Buttons
 col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
 with col_btn2:
     col1, col2 = st.columns(2)
@@ -129,10 +124,9 @@ if clear_clicked:
     st.session_state.user_input = ""
     user_input = ""
 
-# Prediction
 if predict_clicked:
     if not user_input.strip():
-        st.warning("⚠️ Please enter a review.")
+        st.warning("⚠️ Please enter a review to analyze.")
     else:
         clean_text = preprocess_review(user_input)
         tfidf_input = vectorizer.transform([clean_text])
@@ -141,10 +135,9 @@ if predict_clicked:
         word_count = len(clean_text.split())
         exclam_count = user_input.count("!")
         extra_features = [[review_len, word_count, exclam_count]]
-        
+
         if scaling_used:
             extra_features = scaler.transform(extra_features)
-
         extra_sparse = csr_matrix(extra_features)
         final_input = hstack([tfidf_input, extra_sparse])
 
@@ -176,53 +169,76 @@ if predict_clicked:
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
 
-        ### Final Result Box
+        ### --- FIXED & IMPROVED PREDICTION RESULT SECTION ---
+
         st.markdown(f"""
-        <div style="padding:20px; border-radius:10px; background-color:#f0f2f6; text-align:center;">
-            <h2 style="font-size:30px;">{emoji_dict[label]}<br><span style="color: {'green' if label=='Positive' else 'orange' if label=='Neutral' else 'red'};">{label}</span></h2>
-            <p style="font-size:18px;">Confidence: <b>{confidence:.2f}%</b></p>
+        <div style='padding: 20px; background-color: #f0f2f6; border-radius: 12px; margin-bottom:20px;'>
+            <h2 style='text-align: center;'>🔮 Prediction Result</h2>
+            <h3 style='text-align: center; color: {"green" if label=="Positive" else "orange" if label=="Neutral" else "red"};'>{label}</h3>
+            <p style='text-align: center; font-size:18px;'>Confidence: <b>{confidence:.2f}%</b></p>
         </div>
         """, unsafe_allow_html=True)
 
-        # Confidence Breakdown Pie Chart
-        st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
-        sentiments = ["Positive", "Neutral", "Negative"]
-        sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
-        colors = ['#28a745', '#ffc107', '#dc3545']
+        st.markdown("<br>", unsafe_allow_html=True)
 
-        fig, ax = plt.subplots()
-        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
-        ax.axis('equal')
-        st.pyplot(fig)
+        explanation = ""
+        if label == "Positive":
+            explanation = "This review expresses a positive experience with the product, as reflected by positive words and phrases."
+        elif label == "Negative":
+            explanation = "This review expresses dissatisfaction, highlighting negative aspects or a poor experience."
+        else:
+            explanation = "This review appears neutral, with no strong positive or negative sentiments expressed."
 
-        # Review Analysis
-        st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
         st.markdown(f"""
-        <ul style='font-size:16px;'>
-            <li><b>📝 Length:</b> {review_len} characters</li>
-            <li><b>📚 Words:</b> {word_count}</li>
-            <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
-            <li><b>😃 Emojis:</b> {emoji_count_val}</li>
-            <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-        </ul>
-        """, unsafe_allow_html=True)
-
-        # Download result
-        output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val,
-            "Sentiment Score": sentiment_score
-        }])
-
-        st.download_button("⬇️ Download as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
-
-        st.markdown("""
-        <div style='text-align:center; padding-top:10px;'>
-            <span style='font-size:13px; color:gray;'>🤖 Powered by Neural Network (MLP) | TF-IDF + Extra Features</span>
+        <div style='padding: 15px; background-color: #f1f3f5; border-radius: 10px; text-align:center;'>
+            <h4>🔍 Why the Sentiment?</h4>
+            <p style='font-size: 16px;'>{explanation}</p>
         </div>
         """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
+
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
+            colors = ['#28a745', '#ffc107', '#dc3545']
+
+            fig, ax = plt.subplots(figsize=(4,4))
+            wedges, texts, autotexts = ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 10})
+            ax.axis('equal')
+            st.pyplot(fig)
+
+        with col2:
+            st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
+            """, unsafe_allow_html=True)
+
+        with st.container():
+            col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+            with col_dl2:
+                output_df = pd.DataFrame([{
+                    "Review": user_input,
+                    "Prediction": label,
+                    "Confidence": f"{confidence:.2f}%",
+                    "Length": review_len,
+                    "Word Count": word_count,
+                    "Exclamation Count": exclam_count,
+                    "Emoji Count": emoji_count_val,
+                    "Sentiment Score": sentiment_score
+                }])
+                st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+
+                st.markdown("""
+                <div style='text-align:center; padding-top: 10px;'>
+                    <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network (MLP) | TF-IDF + Sentiment + Length + Exclamation + Emoji</span>
+                </div>
+                """, unsafe_allow_html=True)
