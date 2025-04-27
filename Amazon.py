@@ -128,6 +128,9 @@ with col_ex2:
     if col3.button("😠 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
+# Add space after text and above buttons
+st.markdown("<br>", unsafe_allow_html=True)
+
 # User input text area for entering reviews
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
@@ -207,12 +210,12 @@ if predict_clicked:
             </div>
             """, unsafe_allow_html=True)
 
-            # Create pie chart for confidence breakdown with only predicted sentiment
+            # Create pie chart for confidence breakdown with percentages for each sentiment
             fig, ax = plt.subplots()
-            labels = [label]
-            sizes = [confidence]
-            colors = ['#28a745' if label == 'Positive' else '#ffc107' if label == 'Neutral' else '#dc3545']
-            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [probs[0], probs[1], probs[2]]
+            colors = ['#28a745', '#ffc107', '#dc3545']
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
             ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
             st.pyplot(fig)
 
