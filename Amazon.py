@@ -128,9 +128,6 @@ with col_ex2:
     if col3.button("😠 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
-# Add space after text and above buttons
-st.markdown("<br>", unsafe_allow_html=True)
-
 # User input text area for entering reviews
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
@@ -202,9 +199,9 @@ if predict_clicked:
         # Display prediction result with confidence breakdown in the same line
         st.markdown(f"""
         <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
-            <h4 style='margin-right: 20px;'>🔮 Prediction Result</h4>
-            <p style='font-size: 16px; margin-right: 20px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
-            <p style='font-size: 14px;'>Confidence: {confidence:.2f}%</p>
+            <h4 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h4>
+            <p style='font-size: 20px; margin-right: 20px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
+            <p style='font-size: 20px;'>Confidence: {confidence:.2f}%</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -271,11 +268,8 @@ if predict_clicked:
 
                 st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-        # Powered by Section
-        st.markdown(f"""
-        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center;'>
-            <h4>⚙️ Powered by</h4>
-            <p style='font-size: 14px;'>Model: Neural Network (MLP)</p>
-            <p style='font-size: 14px;'>Vectorizer: TF-IDF Vectorizer</p>
-        </div>
-        """, unsafe_allow_html=True)
+                st.markdown("""
+                <div style='text-align:center; padding-top: 10px;'>
+                    <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network (MLP) | TF-IDF + Sentiment + Length + Exclamation + Emoji</span>
+                </div>
+                """, unsafe_allow_html=True)
