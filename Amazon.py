@@ -125,7 +125,7 @@ with col_ex2:
         st.session_state.user_input = "Absolutely love this product! Works like a charm."
     if col2.button("😐 Neutral"):
         st.session_state.user_input = "It's okay, nothing too great or too bad."
-    if col3.button("😠 Negative"):
+    if col3.button("👿 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
 # User input text area for entering reviews
@@ -196,14 +196,14 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
-        # Display prediction result with confidence breakdown in the same line
-        st.markdown(f"""
-        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
-            <h4 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h4>
-            <p style='font-size: 20px; margin-right: 20px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
-            <p style='font-size: 16px; margin-right: 20px; font-weight: normal;'>({confidence:.2f}%)</p>
-        </div>
-        """, unsafe_allow_html=True)
+            # Display prediction result with confidence breakdown in the same line
+            st.markdown(f"""
+            <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
+                <h2 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h2>
+                <p style='font-size: 15px; margin-right: 15px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
+                <p style='font-size: 15px; margin-right: 15px; font-weight: normal;'>({confidence:.2f}%)</p>
+            </div>
+            """, unsafe_allow_html=True)
 
         # **Add paragraph break after prediction**
         st.markdown("<br><br>", unsafe_allow_html=True)
@@ -232,13 +232,19 @@ if predict_clicked:
         with col1:
             st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
 
-            # Create pie chart for confidence breakdown with percentages for each sentiment
-            fig, ax = plt.subplots()
+        # Sentiment classes based on the model output
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]
-            colors = ['#28a745', '#ffc107', '#dc3545']
+            sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
+        
+            # Colors for the respective sentiment categories
+            colors = ['#28a745', '#ffc107', '#dc3545']  # Green for Positive, Yellow for Neutral, Red for Negative
+        
+            # Create the pie chart for the confidence breakdown with percentages
+            fig, ax = plt.subplots()
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
             ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        
+            # Display the pie chart
             st.pyplot(fig)
 
         # **Review analysis section**
