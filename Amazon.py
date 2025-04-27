@@ -181,38 +181,47 @@ if predict_clicked:
     else:
         # Show spinner while performing prediction and processing
         with st.spinner("Analyzing your review..."):
+            # Preprocess user input
             clean_text = preprocess_review(user_input)
             tfidf_input = vectorizer.transform([clean_text])
 
+            # Extract engineered features
             review_len = len(clean_text)
             word_count = len(clean_text.split())
             exclam_count = user_input.count("!")
             extra_features = [[review_len, word_count, exclam_count]]
 
+            # Scale features if scaler is used
             if scaling_used:
                 extra_features = scaler.transform(extra_features)
             extra_sparse = csr_matrix(extra_features)
-            final_input = hstack([tfidf_input, extra_sparse])
+            final_input = hstack([tfidf_input, extra_sparse])  # Combine vectorized text and features
 
+            # Predict probabilities and label
             probs = model.predict_proba(final_input)[0]
             prediction = model.predict(final_input)[0]
 
             label_classes = list(label_encoder.classes_)
             label = label_encoder.inverse_transform([prediction])[0]
 
+            # Check for neutral keywords and adjust label/confidence accordingly
             label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
+            # If no neutral override, get label and confidence from model probabilities
             if label is None:
                 label, confidence = get_confidence_from_probas(probs, label_classes)
 
+            # Calculate sentiment polarity score using TextBlob
             sentiment_score = TextBlob(clean_text).sentiment.polarity
             emoji_count_val = analyze_emojis(user_input)
 
+            # Determine probabilities to display in pie chart, especially if neutral forced
             if label == "Neutral" and confidence == 100.0:
                 display_probs = np.array([0.0, 1.0, 0.0])
             else:
                 display_probs = probs
 
+            # Store all prediction related info in session state for display below
             st.session_state["prediction_result"] = {
                 "label": label,
                 "confidence": confidence,
