@@ -111,37 +111,27 @@ st.markdown("""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
+# Try Example Button Section (Retaining original styling)
+st.markdown("""
+<hr>
+<div style="text-align: center;">
+    <h3>🎯 Try an Example Review</h3>
+</div>
+""", unsafe_allow_html=True)
+
+ol_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
+with col_ex2:
+    col1, col2, col3 = st.columns(3)
+    if col1.button("😃 Positive"):
+        st.session_state.user_input = "Absolutely love this product! Works like a charm."
+    if col2.button("😐 Neutral"):
+        st.session_state.user_input = "It's okay, nothing too great or too bad."
+    if col3.button("😈 Negative"):
+        st.session_state.user_input = "Terrible experience. Waste of money."
+
 # Text input for user to enter review
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
-user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
-
-# Try Example Button Section
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<div style='text-align:center;'><h3>🎯 Try an Example Review</h3></div>", unsafe_allow_html=True)
-
-example_reviews = {
-    "Positive": "This product is amazing! It works perfectly and I love it.",
-    "Neutral": "The product is okay, nothing extraordinary but does its job.",
-    "Negative": "This is the worst product I've ever bought. It stopped working after a day!"
-}
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    try_pos = st.button("👍 Try Positive", key="try_pos")
-with col2:
-    try_neu = st.button("😐 Try Neutral", key="try_neu")
-with col3:
-    try_neg = st.button("👎 Try Negative", key="try_neg")
-
-if try_pos:
-    user_input = example_reviews["Positive"]
-    st.session_state.user_input = user_input
-if try_neu:
-    user_input = example_reviews["Neutral"]
-    st.session_state.user_input = user_input
-if try_neg:
-    user_input = example_reviews["Negative"]
-    st.session_state.user_input = user_input
+user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
 
 # Buttons for prediction and reset
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
