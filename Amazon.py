@@ -226,16 +226,30 @@ if predict_clicked:
 
             probs_adj[pred_idx] = conf_frac
 
-            labels_with_conf = [
-                f"Positive {probs_adj[0]*100:.1f}%",
-                f"Neutral {probs_adj[1]*100:.1f}%",
-                f"Negative {probs_adj[2]*100:.1f}%"
-            ]
+            colors = ['#28a745', '#ffc107', '#dc3545']  # green, yellow, red
 
-            colors = ['#28a745', '#ffc107', '#dc3545']
+            fig, ax = plt.subplots(figsize=(5,5))  # balanced size
 
-            fig, ax = plt.subplots()
-            ax.pie(probs_adj, labels=labels_with_conf, startangle=90, colors=colors, wedgeprops={'edgecolor': 'black'})
+            wedges, texts, autotexts = ax.pie(
+                probs_adj,
+                autopct='%1.1f%%',
+                startangle=90,
+                colors=colors,
+                wedgeprops={'edgecolor': 'black'},
+                pctdistance=0.75,
+                labeldistance=1.1
+            )
+
+            # Set font size for labels and autopct
+            for text in texts:
+                text.set_fontsize(12)
+            for autotext in autotexts:
+                autotext.set_fontsize(12)
+                autotext.set_color('black')
+
+            # Add legend with sentiment names and color patches
+            ax.legend(wedges, ["Positive", "Neutral", "Negative"], title="Sentiments", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+
             ax.axis('equal')
             st.pyplot(fig)
 
