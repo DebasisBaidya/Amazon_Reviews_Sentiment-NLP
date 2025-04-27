@@ -238,6 +238,17 @@ if predict_clicked:
                 </div>
             """, unsafe_allow_html=True)
 
+        # Display Prediction result with confidence score
+        with col2:
+            st.markdown("""
+                <div style='padding: 15px; text-align:center; background-color: #f8f9fa; border-radius: 10px;'>
+                    <h4>🔮 Prediction Result</h4>
+                    <p style='font-size: 16px;'>Sentiment: <b style='color: """ + ("green" if label == "Positive" else "red" if label == "Negative" else "orange") + """;'> {label} </b></p>
+                    <p style='font-size: 14px;'>Confidence: {confidence:.2f}%</p>
+                    <p style='font-size: 14px;'>The sentiment is likely about: <b>{'positive' if label == 'Positive' else 'negative' if label == 'Negative' else 'neutral'}</b>.</p>
+                </div>
+            """, unsafe_allow_html=True)
+
         # Download button below both columns
         with st.container():
             col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
