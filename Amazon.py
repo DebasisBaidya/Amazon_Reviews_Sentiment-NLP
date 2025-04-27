@@ -210,11 +210,32 @@ if predict_clicked:
                 </div>
                 """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots()
-            sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [display_probs[0], display_probs[1], display_probs[2]]
+            sentiment_to_idx = {"Positive": 0, "Neutral": 1, "Negative": 2}
+            conf_frac = confidence / 100
+            probs_adj = display_probs.copy()
+            pred_idx = sentiment_to_idx[label]
+            other_indices = [i for i in range(3) if i != pred_idx]
+            other_sum = display_probs[other_indices].sum()
+
+            if other_sum > 0:
+                for i in other_indices:
+                    probs_adj[i] = display_probs[i] * (1 - conf_frac) / other_sum
+            else:
+                for i in other_indices:
+                    probs_adj[i] = 0.0
+
+            probs_adj[pred_idx] = conf_frac
+
+            labels_with_conf = [
+                f"Positive {probs_adj[0]*100:.1f}%",
+                f"Neutral {probs_adj[1]*100:.1f}%",
+                f"Negative {probs_adj[2]*100:.1f}%"
+            ]
+
             colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
+
+            fig, ax = plt.subplots()
+            ax.pie(probs_adj, labels=labels_with_conf, startangle=90, colors=colors, wedgeprops={'edgecolor': 'black'})
             ax.axis('equal')
             st.pyplot(fig)
 
