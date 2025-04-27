@@ -208,7 +208,24 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Display confidence breakdown and review analysis after prediction
+        # Sentiment Explanation
+        explanation = ""
+        if label == "Positive":
+            explanation = "This review expresses a positive experience with the product, as reflected by positive words and phrases."
+        elif label == "Negative":
+            explanation = "This review expresses dissatisfaction, highlighting negative aspects or a poor experience."
+        else:
+            explanation = "This review appears neutral, with no strong positive or negative sentiments expressed."
+
+        # Display explanation of the sentiment
+        st.markdown(f"""
+        <div style='padding: 15px; background-color: #f1f3f5; border-radius: 10px; text-align:center;'>
+            <h4>🔍 Why the Sentiment?</h4>
+            <p style='font-size: 16px;'>Explanation: {explanation}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Confidence breakdown and review analysis after prediction
         col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
         # Confidence breakdown (Pie chart)
@@ -253,3 +270,12 @@ if predict_clicked:
                 }])
 
                 st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+
+        # Powered by Section
+        st.markdown(f"""
+        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center;'>
+            <h4>⚙️ Powered by</h4>
+            <p style='font-size: 14px;'>Model: Neural Network (MLP)</p>
+            <p style='font-size: 14px;'>Vectorizer: TF-IDF Vectorizer</p>
+        </div>
+        """, unsafe_allow_html=True)
