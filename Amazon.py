@@ -195,19 +195,19 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Display Graph
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Confidence Pie Chart - Correct alignment and positioning
+        col1, col2 = st.columns(2)
 
-        # Confidence Pie Chart
-        fig, ax = plt.subplots(figsize=(4, 4))  # Adjusted size for better UI
-        sentiments = ["Positive", "Neutral", "Negative"]
-        sentiment_probs = [probs[0], probs[1], probs[2]]
-        colors = ['#28a745', '#ffc107', '#dc3545']
-        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
-        ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
-        st.pyplot(fig)
+        with col1:
+            fig, ax = plt.subplots(figsize=(5, 5))  # Adjusted size for better UI
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [probs[0], probs[1], probs[2]]
+            colors = ['#28a745', '#ffc107', '#dc3545']
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
+            ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
+            st.pyplot(fig)
 
-        # Two columns: Confidence breakdown + Review analysis
+        # Confidence breakdown and Review analysis columns aligned
         col1, col2 = st.columns(2)
 
         with col1:
