@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import os
 from textblob import TextBlob
 import emoji
-import time
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -85,7 +84,7 @@ def preprocess_review(review):
 def analyze_emojis(text):
     return sum(1 for char in text if char in emoji.EMOJI_DATA)
 
-# Page Heading
+# Header
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
     <h1>💬 Real-time Sentiment Classifier</h1>
@@ -113,11 +112,11 @@ with col_ex2:
     if col3.button("👿 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
-# Input box
+# Text input
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
 
-# Predict / Reset buttons
+# Buttons
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
 with col_center:
     col1, col2 = st.columns(2)
@@ -126,14 +125,12 @@ with col_center:
 
 if clear_clicked:
     st.session_state.user_input = ""
-    user_input = ""
 
 # Prediction
 if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review.")
     else:
-        st.session_state.user_input = user_input
         clean_text = preprocess_review(user_input)
         tfidf_input = vectorizer.transform([clean_text])
 
@@ -153,14 +150,7 @@ if predict_clicked:
         label_classes = list(label_encoder.classes_)
         label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        def contains_keyword(text, keywords):
-            for kw in keywords:
-                if re.search(rf'\b{re.escape(kw)}\b', text):
-                    return True
-            return False
-
-        neutral_threshold = 0.30
-        if probs[1] >= neutral_threshold or contains_keyword(user_input.lower(), neutral_keywords):
+        if probs[1] >= 0.30 or any(re.search(rf'\b{re.escape(kw)}\b', user_input.lower()) for kw in neutral_keywords):
             label = 'Neutral'
             confidence = probs[1] * 100
         else:
@@ -169,11 +159,10 @@ if predict_clicked:
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
 
-        # Balloons 🎈
         if label == "Positive":
             st.balloons()
 
-        # Result card
+        # Display prediction
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
             <h2 style='color:#0099ff;'>🔮 Prediction Result</h2>
@@ -184,7 +173,7 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # 2 columns layout
+        # Layout for confidence and review analysis
         col1, col2 = st.columns(2)
 
         with col1:
@@ -204,20 +193,20 @@ if predict_clicked:
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("""
+            st.markdown(f"""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
                 <h4 style='text-align:center;'>📊 Review Analysis</h4>
                 <ul style='font-size:16px;'>
-                    <li><b>📝 Review Length:</b> {} characters</li>
-                    <li><b>📚 Word Count:</b> {}</li>
-                    <li><b>❗❗ Exclamation Marks:</b> {}</li>
-                    <li><b>😃 Emoji Count:</b> {}</li>
-                    <li><b>❤️ Sentiment Score:</b> {:.3f}</li>
+                    <li><b>📝 Length:</b> {review_len} characters</li>
+                    <li><b>📚 Words:</b> {word_count}</li>
+                    <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                    <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                    <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
             </div>
-            """.format(review_len, word_count, exclam_count, emoji_count_val, sentiment_score), unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        # Save as CSV
+        # Save results
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
