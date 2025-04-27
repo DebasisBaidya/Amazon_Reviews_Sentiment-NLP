@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 import emoji
 import os
+import io
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -198,7 +199,7 @@ if predict_clicked:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Confidence Breakdown Section
-        col1, col2 = st.columns([1, 1])  # Equal columns for consistency
+        col1, col2 = st.columns([1, 1])  # Side-by-side columns for layout consistency
         with col1:
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
@@ -206,7 +207,6 @@ if predict_clicked:
             </div>
             """, unsafe_allow_html=True)
 
-        with col2:
             fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
 
             sentiments = ["Positive", "Neutral", "Negative"]
@@ -221,41 +221,48 @@ if predict_clicked:
             ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
             st.pyplot(fig)
 
-        # Review analysis section (below the Confidence breakdown)
-        col1, col2 = st.columns([1, 1])
-
-        with col1:
+        with col2:
+            # Review analysis section (below the Confidence breakdown)
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
                 <h4 style='text-align:center;'>📊 Review Analysis</h4>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-                <div style='padding: 12px;'>
-                    <ul style='font-size:16px;'>
-                    <li><b>📝 Length:</b> {review_len} characters</li>
-                    <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
-                    <li><b>😃 Emojis:</b> {emoji_count_val}</li>
-                    <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
+            # Display review analysis metrics
+            st.write(f"**Review Length**: {review_len} characters")
+            st.write(f"**Word Count**: {word_count} words")
+            st.write(f"**Exclamation Marks**: {exclam_count}")
+            st.write(f"**Emoji Count**: {emoji_count_val}")
+            st.write(f"**Sentiment Score**: {sentiment_score:.2f}")
 
-        # Download Result Button
-        output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Review Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val,
-            "Sentiment Score": sentiment_score
-        }])
+        # Download CSV button
+        if st.button("📥 Download CSV"):
+            # Prepare data for download
+            result_df = pd.DataFrame({
+                'Review': [user_input],
+                'Sentiment': [label],
+                'Confidence (%)': [confidence],
+                'Sentiment Score': [sentiment_score],
+                'Review Length': [review_len],
+                'Word Count': [word_count],
+                'Exclamation Marks': [exclam_count],
+                'Emoji Count': [emoji_count_val]
+            })
 
-        col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
-        with col_dl2:
-            st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+            # Create a CSV
+            csv = result_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="sentiment_analysis_result.csv",
+                mime="text/csv"
+            )
 
+# Footer
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("""
+<div style='text-align: center; padding: 20px; font-size:14px;'>
+    Powered by Streamlit | Sentiment Analysis Project
+</div>
+""", unsafe_allow_html=True)
