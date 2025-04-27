@@ -112,11 +112,13 @@ def get_confidence_from_probas(probs, label_classes):
     confidence = probs[label_index] * 100
     return label, confidence
 
-# Initialize session state keys for user input and input widget key
+# Initialize session state keys for user input, input widget key, and prediction results
 if "user_input" not in st.session_state:
     st.session_state["user_input"] = ""
 if "input_key" not in st.session_state:
     st.session_state["input_key"] = 0
+if "prediction_result" not in st.session_state:
+    st.session_state["prediction_result"] = None  # To store prediction info for display
 
 # Header section with styling
 st.markdown("""
@@ -144,18 +146,30 @@ with col_ex2:
     col1, col2, col3 = st.columns(3)
     if col1.button("😃 Positive"):
         st.session_state["user_input"] = "Absolutely love this product! Works like a charm."
+        st.session_state["prediction_result"] = None  # Clear previous prediction when input changes
     if col2.button("😐 Neutral"):
         st.session_state["user_input"] = "It's okay, nothing too great or too bad."
+        st.session_state["prediction_result"] = None
     if col3.button("👿 Negative"):
         st.session_state["user_input"] = "Terrible experience. Waste of money."
+        st.session_state["prediction_result"] = None
 
 # Text input area with dynamic key to allow resetting the widget state
+# Added center alignment and bold label using markdown and container
+st.markdown(
+    """
+    <div style="text-align:center; font-weight:bold; font-size:18px; margin-bottom:5px;">
+        ✍️ Enter your review here:
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 user_input = st.text_area(
-    "✍️ Enter your review here:",
+    "",
     value=st.session_state["user_input"],
     key=f"user_input_{st.session_state['input_key']}",
     height=100,
-    label_visibility="visible"
+    label_visibility="collapsed"  # Hide default label since we added custom above
 )
 
 # Buttons below the input box for prediction and reset
@@ -165,173 +179,206 @@ with col_center:
     predict_clicked = col1.button("🔍 Predict", use_container_width=True)
     reset_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
-# Reset logic: clear input and increment input_key to reset widget state
+# Reset logic: clear input, prediction and increment input_key to reset widget state
 if reset_clicked:
     st.session_state["user_input"] = ""
     st.session_state["input_key"] += 1
+    st.session_state["prediction_result"] = None  # Clear prediction result on reset
 
 # Prediction logic triggered on button click
 if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review.")  # Warn if input is empty
     else:
-        # Preprocess user input
-        clean_text = preprocess_review(user_input)
-        tfidf_input = vectorizer.transform([clean_text])  # Vectorize text input
+        # Show spinner while analyzing
+        with st.spinner("Analyzing your review..."):
+            # Preprocess user input
+            clean_text = preprocess_review(user_input)
+            tfidf_input = vectorizer.transform([clean_text])  # Vectorize text input
 
-        # Extract engineered features
-        review_len = len(clean_text)
-        word_count = len(clean_text.split())
-        exclam_count = user_input.count("!")
-        extra_features = [[review_len, word_count, exclam_count]]
+            # Extract engineered features
+            review_len = len(clean_text)
+            word_count = len(clean_text.split())
+            exclam_count = user_input.count("!")
+            extra_features = [[review_len, word_count, exclam_count]]
 
-        # Scale features if scaler is used
-        if scaling_used:
-            extra_features = scaler.transform(extra_features)
-        extra_sparse = csr_matrix(extra_features)
-        final_input = hstack([tfidf_input, extra_sparse])  # Combine vectorized text and features
+            # Scale features if scaler is used
+            if scaling_used:
+                extra_features = scaler.transform(extra_features)
+            extra_sparse = csr_matrix(extra_features)
+            final_input = hstack([tfidf_input, extra_sparse])  # Combine vectorized text and features
 
-        # Predict probabilities and label
-        probs = model.predict_proba(final_input)[0]
-        prediction = model.predict(final_input)[0]
+            # Predict probabilities and label
+            probs = model.predict_proba(final_input)[0]
+            prediction = model.predict(final_input)[0]
 
-        label_classes = list(label_encoder.classes_)
-        label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
+            label_classes = list(label_encoder.classes_)
+            label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        # Check for neutral keywords and adjust label/confidence accordingly
-        label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
+            # Check for neutral keywords and adjust label/confidence accordingly
+            label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
-        # If no neutral override, get label and confidence from model probabilities
-        if label is None:
-            label, confidence = get_confidence_from_probas(probs, label_classes)
+            # If no neutral override, get label and confidence from model probabilities
+            if label is None:
+                label, confidence = get_confidence_from_probas(probs, label_classes)
 
-        # Calculate sentiment polarity score using TextBlob
-        sentiment_score = TextBlob(clean_text).sentiment.polarity
-        emoji_count_val = analyze_emojis(user_input)  # Count emojis in original input
+            # Calculate sentiment polarity score using TextBlob
+            sentiment_score = TextBlob(clean_text).sentiment.polarity
+            emoji_count_val = analyze_emojis(user_input)  # Count emojis in original input
 
-        # Determine probabilities to display in pie chart, especially if neutral forced
-        if label == "Neutral" and confidence == 100.0:
-            # Forced Neutral by neutral keywords
-            display_probs = np.array([0.0, 1.0, 0.0])
-        else:
-            display_probs = probs
-
-        # Display prediction result with styled HTML
-        st.markdown(f"""
-        <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
-            <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
-            <div style='font-size:20px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
-                {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
-            </div>
-            <div style='margin-top: 5px;'>{'✅ Positive review' if label == "Positive" else '🌀 Neutral review' if label == "Neutral" else '⚠️ Negative review'}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # Create two columns side by side for confidence breakdown and analysis
-        col1, col2 = st.columns(2)
-
-        # Confidence breakdown (Pie chart)
-        with col1:
-            with st.container():
-                st.markdown("""
-                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-                    <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # Map sentiment to index for probability adjustment
-            sentiment_to_idx = {"Positive": 0, "Neutral": 1, "Negative": 2}
-            conf_frac = confidence / 100
-            probs_adj = display_probs.copy()
-            pred_idx = sentiment_to_idx[label]
-            other_indices = [i for i in range(3) if i != pred_idx]
-            other_sum = display_probs[other_indices].sum()
-
-            # Adjust other probabilities to sum to (1 - confidence)
-            if other_sum > 0:
-                for i in other_indices:
-                    probs_adj[i] = display_probs[i] * (1 - conf_frac) / other_sum
+            # Determine probabilities to display in pie chart, especially if neutral forced
+            if label == "Neutral" and confidence == 100.0:
+                # Forced Neutral by neutral keywords
+                display_probs = np.array([0.0, 1.0, 0.0])
             else:
-                for i in other_indices:
-                    probs_adj[i] = 0.0
+                display_probs = probs
 
-            # Set predicted class probability to confidence fraction
-            probs_adj[pred_idx] = conf_frac
+            # Store all prediction related info in session state for display below
+            st.session_state["prediction_result"] = {
+                "label": label,
+                "confidence": confidence,
+                "display_probs": display_probs,
+                "review_len": review_len,
+                "word_count": word_count,
+                "exclam_count": exclam_count,
+                "emoji_count_val": emoji_count_val,
+                "sentiment_score": sentiment_score,
+                "user_input": user_input,
+                "probs": probs,
+                "label_classes": label_classes,
+            }
 
-            # Colors for pie chart slices: green, yellow, red
-            colors = ['#28a745', '#ffc107', '#dc3545']
+# If prediction result exists in session state, display results
+if st.session_state["prediction_result"] is not None:
+    res = st.session_state["prediction_result"]
+    label = res["label"]
+    confidence = res["confidence"]
+    display_probs = res["display_probs"]
+    review_len = res["review_len"]
+    word_count = res["word_count"]
+    exclam_count = res["exclam_count"]
+    emoji_count_val = res["emoji_count_val"]
+    sentiment_score = res["sentiment_score"]
+    user_input = res["user_input"]
+    probs = res["probs"]
+    label_classes = res["label_classes"]
 
-            fig, ax = plt.subplots(figsize=(5, 3.5))  # less tall pie chart
+    # Display prediction result with styled HTML
+    st.markdown(f"""
+    <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
+        <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
+        <div style='font-size:20px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
+            {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
+        </div>
+        <div style='margin-top: 5px;'>{'✅ Positive review' if label == "Positive" else '🌀 Neutral review' if label == "Neutral" else '⚠️ Negative review'}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-            # Plot pie chart with adjusted probabilities
-            wedges, texts, autotexts = ax.pie(
-                probs_adj,
-                autopct='%1.1f%%',
-                startangle=90,
-                colors=colors,
-                wedgeprops={'edgecolor': 'black'},
-                pctdistance=0.75,
-                labeldistance=1.1
-            )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-            # Set font size for labels and autopct text
-            for text in texts:
-                text.set_fontsize(12)
-            for autotext in autotexts:
-                autotext.set_fontsize(12)
-                autotext.set_color('black')
+    # Create two columns side by side for confidence breakdown and analysis
+    col1, col2 = st.columns(2)
 
-            # Add legend with sentiment names and color patches
-            ax.legend(wedges, ["Positive", "Neutral", "Negative"], title="Sentiments", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-
-            ax.axis('equal')  # Equal aspect ratio ensures pie is circular
-            st.pyplot(fig)  # Render pie chart in Streamlit
-
-        # Review analysis section displaying features and sentiment score
-        with col2:
+    # Confidence breakdown (Pie chart)
+    with col1:
+        with st.container():
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-                <h4 style='text-align:center;'>📊 Tweet Analysis</h4>
+                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             </div>
             """, unsafe_allow_html=True)
 
-            # Display analysis details as HTML list
-            st.markdown(f"""
-                <div style='padding: 12px;'>
-                    <ul style='font-size:16px;'>
-                        <li><b>📝 Review Length:</b> {review_len} characters</li>
-                        <li><b>📚 Word Count:</b> {word_count}</li>
-                        <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                        <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                        <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
-            """, unsafe_allow_html=True)
+        # Map sentiment to index for probability adjustment
+        sentiment_to_idx = {"Positive": 0, "Neutral": 1, "Negative": 2}
+        conf_frac = confidence / 100
+        probs_adj = display_probs.copy()
+        pred_idx = sentiment_to_idx[label]
+        other_indices = [i for i in range(3) if i != pred_idx]
+        other_sum = display_probs[other_indices].sum()
 
-        # Prepare dataframe for download with prediction and features
-        output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val,
-            "Sentiment Score": sentiment_score
-        }])
+        # Adjust other probabilities to sum to (1 - confidence)
+        if other_sum > 0:
+            for i in other_indices:
+                probs_adj[i] = display_probs[i] * (1 - conf_frac) / other_sum
+        else:
+            for i in other_indices:
+                probs_adj[i] = 0.0
 
-        # Download button centered in layout
-        col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
-        with col_dl2:
-            st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+        # Set predicted class probability to confidence fraction
+        probs_adj[pred_idx] = conf_frac
 
-        # Footer note about the model
+        # Colors for pie chart slices: green, yellow, red
+        colors = ['#28a745', '#ffc107', '#dc3545']
+
+        fig, ax = plt.subplots(figsize=(5, 3.5))  # less tall pie chart
+
+        # Plot pie chart with adjusted probabilities
+        wedges, texts, autotexts = ax.pie(
+            probs_adj,
+            autopct='%1.1f%%',
+            startangle=90,
+            colors=colors,
+            wedgeprops={'edgecolor': 'black'},
+            pctdistance=0.75,
+            labeldistance=1.1
+        )
+
+        # Set font size for labels and autopct text
+        for text in texts:
+            text.set_fontsize(12)
+        for autotext in autotexts:
+            autotext.set_fontsize(12)
+            autotext.set_color('black')
+
+        # Add legend with sentiment names and color patches
+        ax.legend(wedges, ["Positive", "Neutral", "Negative"], title="Sentiments", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+
+        ax.axis('equal')  # Equal aspect ratio ensures pie is circular
+        st.pyplot(fig)  # Render pie chart in Streamlit
+
+    # Review analysis section displaying features and sentiment score
+    with col2:
         st.markdown("""
-        <div style='text-align:center; padding-top: 10px;'>
-            <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+            <h4 style='text-align:center;'>📊 Tweet Analysis</h4>
         </div>
         """, unsafe_allow_html=True)
 
-        # Celebrate prediction with balloons animation
-        st.balloons()
+        # Display analysis details as HTML list
+        st.markdown(f"""
+            <div style='padding: 12px;'>
+                <ul style='font-size:16px;'>
+                    <li><b>📝 Review Length:</b> {review_len} characters</li>
+                    <li><b>📚 Word Count:</b> {word_count}</li>
+                    <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                    <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                    <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+        </ul>
+        """, unsafe_allow_html=True)
+
+    # Prepare dataframe for download with prediction and features
+    output_df = pd.DataFrame([{
+        "Review": user_input,
+        "Prediction": label,
+        "Confidence": f"{confidence:.2f}%",
+        "Length": review_len,
+        "Word Count": word_count,
+        "Exclamation Count": exclam_count,
+        "Emoji Count": emoji_count_val,
+        "Sentiment Score": sentiment_score
+    }])
+
+    # Download button centered in layout
+    col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+    with col_dl2:
+        st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+
+    # Footer note about the model
+    st.markdown("""
+    <div style='text-align:center; padding-top: 10px;'>
+        <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Celebrate prediction with balloons animation
+    st.balloons()
