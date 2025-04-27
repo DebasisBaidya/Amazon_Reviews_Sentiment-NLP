@@ -70,6 +70,7 @@ neutral_keywords = [
 ]
 
 # Preprocessing functions
+
 def convert_ordinals(text):
     # Convert ordinal numbers (1st, 2nd, etc.) to words (first, second)
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b', lambda m: num2words(int(m.group(1)), to='ordinal'), text)
@@ -120,7 +121,7 @@ if "input_key" not in st.session_state:
 # Header section with styling
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
-    <h3>📦 Amazon Reviews Sentiment Analyzer 🛒💳</h3>
+    <h1>💬 Real-time Sentiment Classifier</h1>
     <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
@@ -131,7 +132,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("""
 <div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
     <h4>📋 Try an example</h4>
-    <p style='font-size:14px;'>Click any button below to auto-fill the example in the input box.</p>
+    <p style='font-size:14px;'>Click a button to auto-fill an example review.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -150,7 +151,7 @@ with col_ex2:
 
 # Text input area with dynamic key to allow resetting the widget state
 user_input = st.text_area(
-    "✍️ Enter your review here:",
+    "Enter your review here:",
     value=st.session_state["user_input"],
     key=f"user_input_{st.session_state['input_key']}",
     height=100,
