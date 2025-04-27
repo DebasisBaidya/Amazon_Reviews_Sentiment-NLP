@@ -138,7 +138,16 @@ with col_ex2:
     if col3.button("👿 Negative"):
         st.session_state["user_input"] = "Terrible experience. Waste of money."
 
-# Buttons
+# Text input with controlled value
+user_input = st.text_area(
+    "",
+    value=st.session_state["user_input"],
+    height=100,
+    key="user_input",
+    label_visibility="collapsed"
+)
+
+# Buttons below the input box
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
 with col_center:
     col1, col2 = st.columns(2)
@@ -148,15 +157,6 @@ with col_center:
 if clear_clicked:
     st.session_state["user_input"] = ""
     st.session_state["reset_triggered"] = True
-
-# Text input with controlled value
-user_input = st.text_area(
-    "",
-    value=st.session_state["user_input"],
-    height=100,
-    key="user_input",
-    label_visibility="collapsed"
-)
 
 # After displaying text area, reset the flag so it only clears once
 if st.session_state["reset_triggered"]:
