@@ -94,7 +94,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Review Analysis (Right side)
-
+col1, col2 = st.columns(2)
 with col2:
     st.markdown("""
     <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
