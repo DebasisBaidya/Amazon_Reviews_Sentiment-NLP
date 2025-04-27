@@ -94,8 +94,10 @@ def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=
     neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
     
     # If the neutral keywords are found or model confidence for Neutral is high enough, predict Neutral
-    if neutral_found or probs[1] >= confidence_threshold:
-        return 'Neutral', probs[1] * 100
+    if neutral_found:
+        return 'Neutral', 100.0  # Return neutral with 100% confidence if the keyword matches
+    elif probs[1] >= confidence_threshold:
+        return 'Neutral', probs[1] * 100  # Otherwise, fall back on model confidence
     else:
         return None, None
 
@@ -116,8 +118,6 @@ st.markdown("""
     <p style='font-size:14px;'>Click a button to auto-fill an example review.</p>
 </div>
 """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)  # Added gap after example section
 
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
@@ -225,7 +225,7 @@ if predict_clicked:
                     <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
                     <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
