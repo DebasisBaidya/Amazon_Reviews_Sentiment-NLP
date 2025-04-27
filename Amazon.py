@@ -18,7 +18,7 @@ from textblob import TextBlob
 # Set page config for Streamlit
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-# Ensure that necessary NLTK resources are downloaded
+# Function to ensure that necessary NLTK resources are downloaded
 def ensure_nltk_data():
     resources = ["punkt", "stopwords", "wordnet", "omw-1.4", "punkt_tab"]
     for resource in resources:
@@ -113,6 +113,19 @@ with col1:
         <h4 style='text-align:center;'>📝 Enter Review Below:</h4></div>""", unsafe_allow_html=True)
     user_input = st.text_area("Enter your review:")
 
+    # Example Buttons for positive, neutral, and negative examples
+    col1_1, col1_2, col1_3 = st.columns([2, 6, 2])
+    with col1_2:
+        st.markdown("<h4 style='text-align:center;'>Examples</h4>", unsafe_allow_html=True)
+        col_btn1, col_btn2, col_btn3 = st.columns(3)
+        with col_btn1:
+            st.button("Positive Example", key="positive", on_click=lambda: st.session_state.update({"user_input": "I love this product! It works great!"}))
+        with col_btn2:
+            st.button("Neutral Example", key="neutral", on_click=lambda: st.session_state.update({"user_input": "It's okay, not bad but not great."}))
+        with col_btn3:
+            st.button("Negative Example", key="negative", on_click=lambda: st.session_state.update({"user_input": "I hate this product. It's awful!"}))
+
+# If user has input a review, process and classify it
 if user_input:
     # Preprocess the user input
     clean_text = preprocess_review(user_input)
@@ -191,11 +204,3 @@ if user_input:
             font-weight: bold;
             border-radius: 10px;
             border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        div[data-testid="stDownloadButton"] > button:hover {
-            background-color: #ff1a1a;
-        }
-        </style>
-        """, unsafe_allow_html=True)
