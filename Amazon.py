@@ -178,9 +178,6 @@ if predict_clicked:
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
 
-        if label == "Positive":
-            st.balloons()
-
         # Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
@@ -203,17 +200,18 @@ if predict_clicked:
                 st.markdown("""
                 <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
                     <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+                </div>
                 """, unsafe_allow_html=True)
-        
+
             # Create pie chart for confidence breakdown with percentages for each sentiment
             fig, ax = plt.subplots()
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]
+            sentiment_probs = [probs[0], probs[1], probs[2]]  # Use the dynamic probability values here
             colors = ['#28a745', '#ffc107', '#dc3545']
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
             ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
             st.pyplot(fig)
-        
+
         # Review analysis section
         with col2:
             st.markdown("""
@@ -227,7 +225,7 @@ if predict_clicked:
                     <ul style='font-size:16px;'>
                         <li><b>📝 Review Length:</b> {review_len} characters</li>
                         <li><b>📚 Word Count:</b> {word_count}</li>
-                        <li><b>❗ Exclamation Marks:</b> {exclam_count}</li>
+                        <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
                         <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
                         <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
             </ul>
