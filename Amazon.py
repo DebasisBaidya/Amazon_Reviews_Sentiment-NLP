@@ -56,7 +56,7 @@ emoji = {
 neutral_keywords = [
     'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
     'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
-    'couldn't care less', 'indifferent', 'okay-ish', 'neither good nor bad',
+    'couldn’t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
     'passable', 'acceptable', 'not great', 'nothing remarkable', 'alright-ish',
     'just fine', 'could be worse', 'not bad, not good', 'somewhat okay', 'meh, could be better',
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
