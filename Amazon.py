@@ -196,14 +196,14 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
-            # Display prediction result with confidence breakdown in the same line
-            st.markdown(f"""
-            <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
-                <h2 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h2>
-                <p style='font-size: 15px; margin-right: 15px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
-                <p style='font-size: 15px; margin-right: 15px; font-weight: normal;'>({confidence:.2f}%)</p>
-            </div>
-            """, unsafe_allow_html=True)
+        # Display prediction result with confidence breakdown in the same line
+        st.markdown(f"""
+        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
+            <h2 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h2>
+            <p style='font-size: 15px; margin-right: 15px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
+            <p style='font-size: 15px; margin-right: 15px; font-weight: normal;'>({confidence:.2f}%)</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         # **Add paragraph break after prediction**
         st.markdown("<br><br>", unsafe_allow_html=True)
