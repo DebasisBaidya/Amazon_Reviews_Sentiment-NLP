@@ -197,7 +197,7 @@ if predict_clicked:
 
         # Confidence Pie Chart - Correct alignment and positioning
         st.markdown("<br>", unsafe_allow_html=True)
-        
+
         # Confidence Breakdown Section
         col1, col2 = st.columns([1, 1])  # Side-by-side columns for layout consistency
         with col1:
@@ -215,7 +215,9 @@ if predict_clicked:
 
             # If the label is Neutral and confidence is 100, we ensure the pie chart reflects this.
             if label == "Neutral" and confidence == 100.0:
-                sentiment_probs = [0, 100, 0]  # Set all other confidences to 0
+                sentiment_probs = [probs[0], 100.0, probs[2]]  # Only Neutral has 100% confidence, others remain as model's prob
+            # For Positive and Negative, use the model's predicted confidence
+            # (No changes needed here for Positive/Negative, as the model already gives us the confidence)
 
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
