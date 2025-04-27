@@ -70,7 +70,6 @@ neutral_keywords = [
 ]
 
 # Preprocessing functions
-
 def convert_ordinals(text):
     # Convert ordinal numbers (1st, 2nd, etc.) to words (first, second)
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b', lambda m: num2words(int(m.group(1)), to='ordinal'), text)
@@ -179,7 +178,7 @@ with col_center:
     predict_clicked = col1.button("🔍 Predict", use_container_width=True)
     reset_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
-# Reset logic: clear input, prediction and increment input_key to reset widget state
+# Reset logic: clear input and prediction result on reset
 if reset_clicked:
     st.session_state["user_input"] = ""
     st.session_state["input_key"] += 1
@@ -340,7 +339,7 @@ if st.session_state["prediction_result"] is not None:
     with col2:
         st.markdown("""
         <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-            <h4 style='text-align:center;'>📊 Tweet Analysis</h4>
+            <h4 style='text-align:center;'>📊 Review Analysis</h4>
         </div>
         """, unsafe_allow_html=True)
 
@@ -353,7 +352,8 @@ if st.session_state["prediction_result"] is not None:
                     <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
                     <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-        </ul>
+                </ul>
+            </div>
         """, unsafe_allow_html=True)
 
     # Prepare dataframe for download with prediction and features
