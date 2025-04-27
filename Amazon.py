@@ -87,27 +87,17 @@ def analyze_emojis(text):
 
 # Handle Neutral Keywords and Confidence Calculation
 def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=0.30):
-    """
-    Modify neutral sentiment detection by lowering the threshold and improving keyword matching.
-    """
-    # Check for any neutral keyword in the review
     neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
-    
-    # If the neutral keywords are found, predict Neutral with 100% confidence
     if neutral_found:
-        return 'Neutral', 100.0  # Return neutral with 100% confidence if the keyword matches
+        return 'Neutral', 100.0
     elif probs[1] >= confidence_threshold:
-        return 'Neutral', probs[1] * 100  # Otherwise, fall back on model confidence
+        return 'Neutral', probs[1] * 100
     else:
         return None, None
 
-# Ensure the label is in the correct format (string) and use the proper index for the confidence calculation
 def get_confidence_from_probas(probs, label_classes):
-    """
-    Get label and confidence from predicted probabilities.
-    """
-    label_index = np.argmax(probs)  # Find the class index with the highest probability
-    label = label_classes[label_index]  # Convert the index back to label
+    label_index = np.argmax(probs)
+    label = label_classes[label_index]
     confidence = probs[label_index] * 100
     return label, confidence
 
@@ -129,7 +119,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Adding gap after the examples
 st.markdown("<br>", unsafe_allow_html=True)
 
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
@@ -175,17 +164,15 @@ if predict_clicked:
         extra_sparse = csr_matrix(extra_features)
         final_input = hstack([tfidf_input, extra_sparse])
 
-        # Get probabilities and prediction
         probs = model.predict_proba(final_input)[0]
         prediction = model.predict(final_input)[0]
 
         label_classes = list(label_encoder.classes_)
         label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        # Handle Neutral Keyword and Confidence
         label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
-        if label is None:  # If neutral wasn't selected by keywords, use the class with highest probability
+        if label is None:
             label, confidence = get_confidence_from_probas(probs, label_classes)
 
         sentiment_score = TextBlob(clean_text).sentiment.polarity
@@ -194,7 +181,7 @@ if predict_clicked:
         if label == "Positive":
             st.balloons()
 
-        # -- Prediction result
+        # Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
             <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
@@ -205,28 +192,46 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
-        # Confidence Pie Chart - Correct alignment and positioning
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Confidence Breakdown Section
-        col1, col2 = st.columns([1, 1])  # Side-by-side columns for layout consistency
+        # --- Confidence Breakdown Header ---
+        st.markdown("""
+        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top:20px;'>
+            <h3 style='text-align:center;'>📊 Confidence Breakdown</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Pie chart for confidence
+        fig, ax = plt.subplots(figsize=(5, 5))
+        sentiments = ["Positive", "Neutral", "Negative"]
+        sentiment_probs = [probs[0], probs[1], probs[2]]
+        colors = ["#00C851", "#ffbb33", "#ff4444"]
+
+        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
+        ax.axis('equal')
+        st.pyplot(fig)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- Review Analysis Header ---
+        st.markdown("""
+        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top:20px;'>
+            <h3 style='text-align:center;'>🧮 Review Analysis</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Review Metrics
+        col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown("""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
-                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-            </div>
-            """, unsafe_allow_html=True)
+            st.metric("Review Length", review_len)
+            st.metric("Exclamation Count", exclam_count)
+        with col2:
+            st.metric("Word Count", word_count)
+            st.metric("Emoji Count", emoji_count_val)
+        with col3:
+            st.metric("Sentiment Score", f"{sentiment_score:.2f}")
 
-            fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
-
-            sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]
-
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90)
-            ax.axis('equal')  # Equal aspect ratio ensures pie chart is circular.
-            st.pyplot(fig)
-
-        # Creating the DataFrame for the result
+        # Result download
         output_df = pd.DataFrame([{
             "Review": user_input,
             "Prediction": label,
@@ -238,17 +243,14 @@ if predict_clicked:
             "Sentiment Score": sentiment_score
         }])
 
-        # Download button for the result CSV
         col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
         with col_dl2:
             st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-        # Footer with the app's information
         st.markdown("""
         <div style='text-align:center; padding-top: 10px;'>
             <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
         </div>
         """, unsafe_allow_html=True)
 
-        # Balloons animation for fun
         st.balloons()
