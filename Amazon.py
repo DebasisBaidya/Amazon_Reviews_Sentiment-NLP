@@ -187,15 +187,25 @@ if predict_clicked:
         # -- Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
-            <h2 style='color:#0099ff;'> 🔮 Prediction Result</h2>
-            <div style='font-size:22px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
-                {emoji_dict[label]} <b>{label}</b> 
-                <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
+            <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
+            <div style='font-size:20px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
+                {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
             </div>
+            <div style='margin-top: 5px;'>{'✅ Positive review' if label == "Positive" else '🌀 Neutral review' if label == "Neutral" else '⚠️ Negative review'}</div>
         </div>
         """, unsafe_allow_html=True)
 
+        # Display Graph
         st.markdown("<br>", unsafe_allow_html=True)
+
+        # Confidence Pie Chart
+        fig, ax = plt.subplots(figsize=(4, 4))  # Adjusted size for better UI
+        sentiments = ["Positive", "Neutral", "Negative"]
+        sentiment_probs = [probs[0], probs[1], probs[2]]
+        colors = ['#28a745', '#ffc107', '#dc3545']
+        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
+        ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
+        st.pyplot(fig)
 
         # Two columns: Confidence breakdown + Review analysis
         col1, col2 = st.columns(2)
@@ -204,17 +214,8 @@ if predict_clicked:
             st.markdown("""
             <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+            </div>
             """, unsafe_allow_html=True)
-
-            fig, ax = plt.subplots(figsize=(4, 4))  # Adjusted the size of the graph
-            sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]
-            colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
-            ax.axis('equal')
-            st.pyplot(fig)
-
-            st.markdown("</div>", unsafe_allow_html=True)
 
         with col2:
             st.markdown("""
@@ -228,7 +229,7 @@ if predict_clicked:
                     <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
                     <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
