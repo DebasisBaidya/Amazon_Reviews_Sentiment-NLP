@@ -104,8 +104,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Input section for the user to enter a review
-user_input = st.text_area("Enter your review:")
+# Define columns for UI layout
+col1, col2 = st.columns([3, 7])
+
+# Left side UI for entering the review
+with col1:
+    st.markdown("""<div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px;'>
+        <h4 style='text-align:center;'>📝 Enter Review Below:</h4></div>""", unsafe_allow_html=True)
+    user_input = st.text_area("Enter your review:")
 
 if user_input:
     # Preprocess the user input
@@ -125,11 +131,9 @@ if user_input:
     label = label_encoder.inverse_transform(prediction)[0]  # Get the label for the prediction
     confidence = model.predict_proba(vectorizer.transform([clean_text]))[0].max() * 100  # Get the confidence percentage
 
-    # Layout for displaying results
-    col1, col2 = st.columns(2)
-
+    # Right side UI for review analysis and output
     with col2:
-        st.markdown("""<div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+        st.markdown("""<div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
             <h4 style='text-align:center;'>📊 Review Analysis</h4></div>""", unsafe_allow_html=True)
 
         # Display the review analysis metrics
