@@ -201,9 +201,12 @@ if predict_clicked:
         <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center; display: flex; justify-content: center; align-items: center;'>
             <h4 style='margin-right: 20px; font-size: 20px;'>🔮 Prediction Result</h4>
             <p style='font-size: 20px; margin-right: 20px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
-            <p style='font-size: 20px;'>Confidence: {confidence:.2f}%</p>
+            <p style='font-size: 16px; margin-right: 20px; font-weight: normal;'>({confidence:.2f}%)</p>
         </div>
         """, unsafe_allow_html=True)
+
+        # Add paragraph break after prediction result
+        st.markdown("<br><br>", unsafe_allow_html=True)
 
         # Sentiment Explanation
         explanation = ""
