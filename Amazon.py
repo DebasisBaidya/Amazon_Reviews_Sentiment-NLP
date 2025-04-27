@@ -203,7 +203,7 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(1, 1)) 
+            fig, ax = plt.subplots(figsize=(6, 6))  # Increased size of the graph
             sentiments = ["Positive", "Neutral", "Negative"]
             sentiment_probs = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
