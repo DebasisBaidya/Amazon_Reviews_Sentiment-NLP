@@ -169,6 +169,9 @@ if predict_clicked:
         word_count = len(clean_text.split())
         exclam_count = user_input.count("!")
         extra_features = [[review_len, word_count, exclam_count]]
+        
+        with st.spinner("Analyzing tweet..."):
+                time.sleep(1.5)
 
         if scaling_used:
             extra_features = scaler.transform(extra_features)
@@ -195,9 +198,6 @@ if predict_clicked:
             display_probs = np.array([0.0, 1.0, 0.0])
         else:
             display_probs = probs
-
-            with st.spinner("Analyzing tweet..."):
-                time.sleep(1.5)
 
         # Prediction result
         st.markdown(f"""
