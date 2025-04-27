@@ -9,3 +9,4 @@ contractions
 num2words
 joblib
 textblob
+emoji
