@@ -102,15 +102,12 @@ def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=
         return None, None
 
 # Ensure the label is in the correct format (string) and use the proper index for the confidence calculation
-def get_confidence_from_probas(label, probs, label_classes):
-    # Ensure label is a string for indexing purposes
-    if isinstance(label, str):
-        label_index = label_classes.index(label)
-    else:
-        # If the label is a numerical index, map it back to string
-        label_index = label  # Assuming 'label' is an integer here
-        label = label_classes[label_index]  # Convert the integer index back to label
-
+def get_confidence_from_probas(probs, label_classes):
+    """
+    Get label and confidence from predicted probabilities.
+    """
+    label_index = np.argmax(probs)  # Find the class index with the highest probability
+    label = label_classes[label_index]  # Convert the index back to label
     confidence = probs[label_index] * 100
     return label, confidence
 
@@ -189,7 +186,7 @@ if predict_clicked:
         label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
         if label is None:  # If neutral wasn't selected by keywords, use the class with highest probability
-            label, confidence = get_confidence_from_probas(label, probs, label_classes)
+            label, confidence = get_confidence_from_probas(probs, label_classes)
 
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
