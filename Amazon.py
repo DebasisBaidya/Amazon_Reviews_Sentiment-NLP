@@ -375,7 +375,9 @@ if st.session_state["prediction_result"] is not None:
     # Footer note about the model
     st.markdown("""
     <div style='text-align:center; padding-top: 10px;'>
-        <span style='font-size:13px;
+        <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Celebrate prediction with balloons animation
+    # Celebrate prediction with balloons
     st.balloons()
