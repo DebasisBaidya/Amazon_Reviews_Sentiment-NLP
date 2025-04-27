@@ -146,12 +146,14 @@ if predict_clicked:
         extra_sparse = csr_matrix(extra_features)
         final_input = hstack([tfidf_input, extra_sparse])
 
+        # Get probabilities and prediction
         probs = model.predict_proba(final_input)[0]
         prediction = model.predict(final_input)[0]
 
         label_classes = list(label_encoder.classes_)
         label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
+        # Adjusting for Neutral detection
         if probs[1] >= 0.30 or any(re.search(rf'\b{re.escape(kw)}\b', user_input.lower()) for kw in neutral_keywords):
             label = 'Neutral'
             confidence = probs[1] * 100
@@ -186,10 +188,12 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
+            # Create pie chart for confidence breakdown with probabilities for each sentiment
             fig, ax = plt.subplots(figsize=(1, 1)) 
             sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = probs  # Using all sentiment probabilities
             colors = ['#28a745', '#ffc107', '#dc3545']
-            ax.pie(confidence, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
             ax.axis('equal')
             st.pyplot(fig)
 
