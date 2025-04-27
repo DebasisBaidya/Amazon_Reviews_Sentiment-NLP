@@ -190,9 +190,8 @@ if predict_clicked:
     if not user_input.strip():
         st.warning("⚠️ Please enter a review.")  # Warn if input is empty
     else:
-        # Show spinner while analyzing
+        # Show spinner while performing prediction and processing
         with st.spinner("Analyzing your review..."):
-            time.sleep(2)
             # Preprocess user input
             clean_text = preprocess_review(user_input)
             tfidf_input = vectorizer.transform([clean_text])  # Vectorize text input
