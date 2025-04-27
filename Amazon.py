@@ -195,7 +195,7 @@ if predict_clicked:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Create two columns side by side
-col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
         # Confidence breakdown (Pie chart)
         with col1:
