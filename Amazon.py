@@ -128,9 +128,6 @@ with col_ex2:
     if col3.button("😠 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
-# Add space after text and above buttons
-st.markdown("<br>", unsafe_allow_html=True)
-
 # User input text area for entering reviews
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
 user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
@@ -199,58 +196,58 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
-# Side-by-side output boxes with equal width columns
-col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
+        # Display confidence breakdown and review analysis after prediction
+        col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
-# Display review analysis on the left
-with col1:
-    st.markdown("""
-        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-            <h4 style='text-align:center;'>📊 Review Analysis</h4>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-        <div style='padding: 12px;'>
-            <ul style='font-size:16px; line-height:1.8;'>
-                <li><b>📝 Review Length:</b> {review_len} characters</li>
-                <li><b>📚 Word Count:</b> {word_count}</li>
-                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
-        </div>
-    """, unsafe_allow_html=True)
+        # Display confidence breakdown on the left
+        with col1:
+            st.markdown("""
+                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                    <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+            </div>
+            """, unsafe_allow_html=True)
 
-# Confidence breakdown with pie chart on the right
-with col2:
-    st.markdown("""
-    <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-        <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-    </div>
-    """, unsafe_allow_html=True)
+            # Create pie chart for confidence breakdown with only predicted sentiment
+            fig, ax = plt.subplots()
+            labels = [label]
+            sizes = [confidence]
+            colors = ['#28a745' if label == 'Positive' else '#ffc107' if label == 'Neutral' else '#dc3545']
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+            st.pyplot(fig)
 
-    # Create pie chart for confidence breakdown
-    fig, ax = plt.subplots()
-    labels = ['Positive', 'Neutral', 'Negative']
-    sizes = [probs[0], probs[1], probs[2]]
-    colors = ['#28a745', '#ffc107', '#dc3545']  # Green for Positive, Yellow for Neutral, Red for Negative
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    st.pyplot(fig)
+        # Display review analysis on the right
+        with col2:
+            st.markdown("""
+                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                    <h4 style='text-align:center;'>📊 Review Analysis</h4>
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style='padding: 12px;'>
+                    <ul style='font-size:16px; line-height:1.8;'>
+                        <li><b>📝 Review Length:</b> {review_len} characters</li>
+                        <li><b>📚 Word Count:</b> {word_count}</li>
+                        <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                        <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                        <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+                    </ul>
+                </div>
+            """, unsafe_allow_html=True)
 
-# Download button below both columns
-with st.container():
-    col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
-    with col_dl2:
-        output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val,
-            "Sentiment Score": sentiment_score
-        }])
+        # Download button below both columns
+        with st.container():
+            col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+            with col_dl2:
+                output_df = pd.DataFrame([{
+                    "Review": user_input,
+                    "Prediction": label,
+                    "Confidence": f"{confidence:.2f}%",
+                    "Length": review_len,
+                    "Word Count": word_count,
+                    "Exclamation Count": exclam_count,
+                    "Emoji Count": emoji_count_val,
+                    "Sentiment Score": sentiment_score
+                }])
 
-        st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+                st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
