@@ -196,19 +196,21 @@ if predict_clicked:
         """, unsafe_allow_html=True)
 
         # Confidence Pie Chart - Correct alignment and positioning
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 3])
 
-        with col1:
-            fig, ax = plt.subplots(figsize=(5, 5))  # Adjusted size for better UI
+        with col2:
+            fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
+
             sentiments = ["Positive", "Neutral", "Negative"]
             sentiment_probs = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
+
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
             st.pyplot(fig)
 
         # Confidence breakdown and Review analysis columns aligned
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([2, 3])
 
         with col1:
             st.markdown("""
