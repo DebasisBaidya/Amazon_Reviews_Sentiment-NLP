@@ -239,27 +239,29 @@ if predict_clicked:
             st.write(f"**Sentiment Score**: {sentiment_score:.2f}")
 
         # Download CSV button
-        if st.button("📥 Download CSV"):
-            # Prepare data for download
-            result_df = pd.DataFrame({
-                'Review': [user_input],
-                'Sentiment': [label],
-                'Confidence (%)': [confidence],
-                'Sentiment Score': [sentiment_score],
-                'Review Length': [review_len],
-                'Word Count': [word_count],
-                'Exclamation Marks': [exclam_count],
-                'Emoji Count': [emoji_count_val]
-            })
+        col_left, col_center, col_right = st.columns([1, 2, 1])  # Ensure this is centered
+        with col_center:
+            if st.button("📥 Download CSV"):
+                # Prepare data for download
+                result_df = pd.DataFrame({
+                    'Review': [user_input],
+                    'Sentiment': [label],
+                    'Confidence (%)': [confidence],
+                    'Sentiment Score': [sentiment_score],
+                    'Review Length': [review_len],
+                    'Word Count': [word_count],
+                    'Exclamation Marks': [exclam_count],
+                    'Emoji Count': [emoji_count_val]
+                })
 
-            # Create a CSV
-            csv = result_df.to_csv(index=False)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name="sentiment_analysis_result.csv",
-                mime="text/csv"
-            )
+                # Create a CSV
+                csv = result_df.to_csv(index=False)
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name="sentiment_analysis_result.csv",
+                    mime="text/csv"
+                )
 
 # Footer
 st.markdown("<hr>", unsafe_allow_html=True)
