@@ -196,6 +196,9 @@ if predict_clicked:
         else:
             display_probs = probs
 
+            with st.spinner("Analyzing tweet..."):
+                time.sleep(1.5)
+
         # Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
