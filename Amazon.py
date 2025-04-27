@@ -93,7 +93,7 @@ def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=
     # Check for any neutral keyword in the review
     neutral_found = any(re.search(rf'\b{re.escape(kw)}\b', text.lower()) for kw in neutral_keywords)
     
-    # If the neutral keywords are found or model confidence for Neutral is high enough, predict Neutral
+    # If the neutral keywords are found, predict Neutral with 100% confidence
     if neutral_found:
         return 'Neutral', 100.0  # Return neutral with 100% confidence if the keyword matches
     elif probs[1] >= confidence_threshold:
@@ -196,7 +196,13 @@ if predict_clicked:
         """, unsafe_allow_html=True)
 
         # Confidence Pie Chart - Correct alignment and positioning
-        col1, col2 = st.columns([1, 3])
+        col1, col2 = st.columns([1, 1])  # Equal columns for consistency
+        with col1:
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
+                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+            </div>
+            """, unsafe_allow_html=True)
 
         with col2:
             fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
@@ -205,12 +211,16 @@ if predict_clicked:
             sentiment_probs = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
 
+            # If the label is Neutral and confidence is 100, we ensure the pie chart reflects this.
+            if label == "Neutral" and confidence == 100.0:
+                sentiment_probs = [0, 100, 0]  # Set all other confidences to 0
+
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')  # Equal aspect ratio ensures that pie chart is circular
             st.pyplot(fig)
 
         # Confidence breakdown and Review analysis columns aligned
-        col1, col2 = st.columns([2, 3])
+        col1, col2 = st.columns([1, 1])
 
         with col1:
             st.markdown("""
@@ -232,7 +242,7 @@ if predict_clicked:
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
                     <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
-                    <li><b>😃 Emojis:</b> {emoji_count_val}</li>
+                    <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
             </div>
