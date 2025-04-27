@@ -126,6 +126,7 @@ with col_center:
 
 if clear_clicked:
     st.session_state.user_input = ""
+    user_input = ""
 
 # Prediction
 if predict_clicked:
@@ -166,7 +167,7 @@ if predict_clicked:
         # -- Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
-            <h2 style='color:#0099ff;'>🔮 Prediction Result</h2>
+            <h2 style='color:#0099ff;'> 🔮 Prediction Result</h2>
             <div style='font-size:22px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
                 {emoji_dict[label]} <b>{label}</b> 
                 <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
@@ -185,7 +186,7 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(2.5, 2)) 
+            fig, ax = plt.subplots(figsize=(1.5, 2)) 
             sentiments = ["Positive", "Neutral", "Negative"]
             sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
             colors = ['#28a745', '#ffc107', '#dc3545']
@@ -196,10 +197,15 @@ if predict_clicked:
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown(f"""
-            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
                 <h4 style='text-align:center;'>📊 Review Analysis</h4>
-                <ul style='font-size:16px;'>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+                <div style='padding: 12px;'>
+                    <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
                     <li><b>❗ Exclamations:</b> {exclam_count}</li>
