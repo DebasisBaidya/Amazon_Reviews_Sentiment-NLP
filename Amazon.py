@@ -119,6 +119,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Adding gap after the examples
+st.markdown("<br>", unsafe_allow_html=True)
+
 col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
     col1, col2, col3 = st.columns(3)
@@ -203,7 +206,7 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(6, 6))  # Increased size of the graph
+            fig, ax = plt.subplots(figsize=(4, 4))  # Adjusted the size of the graph
             sentiments = ["Positive", "Neutral", "Negative"]
             sentiment_probs = [probs[0], probs[1], probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
