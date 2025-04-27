@@ -178,6 +178,13 @@ if predict_clicked:
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
 
+        # Determine display_probs for pie chart based on final label and confidence logic
+        if label == "Neutral" and confidence == 100.0:
+            # Forced Neutral by neutral keywords
+            display_probs = np.array([0.0, 1.0, 0.0])
+        else:
+            display_probs = probs
+
         # Prediction result
         st.markdown(f"""
         <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
@@ -203,13 +210,12 @@ if predict_clicked:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # Create pie chart for confidence breakdown with percentages for each sentiment
             fig, ax = plt.subplots()
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[0], probs[1], probs[2]]  # Use the dynamic probability values here
+            sentiment_probs = [display_probs[0], display_probs[1], display_probs[2]]
             colors = ['#28a745', '#ffc107', '#dc3545']
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=colors)
-            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+            ax.axis('equal')
             st.pyplot(fig)
 
         # Review analysis section
