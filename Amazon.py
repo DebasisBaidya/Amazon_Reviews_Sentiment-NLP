@@ -115,49 +115,50 @@ with col2:
         </ul>
     </div>
     """, unsafe_allow_html=True)
-        output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val
-        }])
+    
+    output_df = pd.DataFrame([{
+        "Review": user_input,
+        "Prediction": label,
+        "Confidence": f"{confidence:.2f}%",
+        "Length": review_len,
+        "Word Count": word_count,
+        "Exclamation Count": exclam_count,
+        "Emoji Count": emoji_count_val
+    }])
 
-        col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
-        with col_dl2:
-            st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+    col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+    with col_dl2:
+        st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
 
-        st.markdown("""
-        <div style='text-align:center; padding-top: 10px;'>
-            <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center; padding-top: 10px;'>
+        <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.balloons()
+    st.balloons()
 
-        st.markdown("""
-        <style>
-        canvas:has(+ div[data-testid="stNotificationContent"]) {
-            display: none;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    canvas:has(+ div[data-testid="stNotificationContent"]) {
+        display: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <style>
-        div[data-testid="stDownloadButton"] > button {
-            background-color: #ff4b4b;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        div[data-testid="stDownloadButton"] > button:hover {
-            background-color: #ff1a1a;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    div[data-testid="stDownloadButton"] > button {
+        background-color: #ff4b4b;
+        color: white;
+        font-weight: bold;
+        border-radius: 10px;
+        border: none;
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #ff1a1a;
+    }
+    </style>
+    """, unsafe_allow_html=True)
