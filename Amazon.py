@@ -199,16 +199,21 @@ if predict_clicked:
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
         
+        # Display prediction result with confidence breakdown
+        st.markdown(f"""
+        <div style='padding: 15px; background-color: #f8f9fa; border-radius: 10px; text-align:center;'>
+            <h4>🔮 Prediction Result</h4>
+            <p style='font-size: 16px;'>Sentiment: <b style='color: {"green" if label == "Positive" else "red" if label == "Negative" else "orange"};'>{label}</b></p>
+            <p style='font-size: 14px;'>Confidence: {confidence:.2f}%</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Display confidence breakdown and review analysis after prediction
         col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
-        # Display confidence breakdown on the left
+        # Confidence breakdown (Pie chart)
         with col1:
-            st.markdown("""
-                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-                    <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("<h4 style='text-align:center;'>📈 Confidence Breakdown</h4>", unsafe_allow_html=True)
 
             # Create pie chart for confidence breakdown with percentages for each sentiment
             fig, ax = plt.subplots()
@@ -219,34 +224,17 @@ if predict_clicked:
             ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
             st.pyplot(fig)
 
-        # Display review analysis on the right
+        # Review analysis section
         with col2:
-            st.markdown("""
-                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-                    <h4 style='text-align:center;'>📊 Review Analysis</h4>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("<h4 style='text-align:center;'>📊 Review Analysis</h4>", unsafe_allow_html=True)
             st.markdown(f"""
-                <div style='padding: 12px;'>
-                    <ul style='font-size:16px; line-height:1.8;'>
-                        <li><b>📝 Review Length:</b> {review_len} characters</li>
-                        <li><b>📚 Word Count:</b> {word_count}</li>
-                        <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                        <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                        <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-                    </ul>
-                </div>
-            """, unsafe_allow_html=True)
-
-        # Display Prediction result with confidence score
-        with col2:
-            st.markdown("""
-                <div style='padding: 15px; text-align:center; background-color: #f8f9fa; border-radius: 10px;'>
-                    <h4>🔮 Prediction Result</h4>
-                    <p style='font-size: 16px;'>Sentiment: <b style='color: """ + ("green" if label == "Positive" else "red" if label == "Negative" else "orange") + """;'> {label} </b></p>
-                    <p style='font-size: 14px;'>Confidence: {confidence:.2f}%</p>
-                    <p style='font-size: 14px;'>The sentiment is likely about: <b>{'positive' if label == 'Positive' else 'negative' if label == 'Negative' else 'neutral'}</b>.</p>
-                </div>
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
             """, unsafe_allow_html=True)
 
         # Download button below both columns
