@@ -93,16 +93,49 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Review Analysis (Right side)
+# Create three columns
+col1, col2, col3 = st.columns([1, 2, 1])  # Adjust the ratio as needed
 
+# User input section (Left side)
+with col1:
+    user_input = st.text_area("Enter a product review:", value=st.session_state.user_input, height=300)
+    if st.button("Classify"):
+        st.session_state.user_input = user_input
+        processed_review = preprocess_review(user_input)
+        # Vectorize the review
+        X = vectorizer.transform([processed_review])
+        
+        if scaling_used:
+            X = scaler.transform(X)
+        
+        # Predict sentiment
+        prediction = model.predict(X)
+        label = label_encoder.inverse_transform(prediction)[0]
+        
+        # Confidence calculation
+        prob = model.predict_proba(X)
+        confidence = np.max(prob) * 100
+        
+        # Review length, word count, exclamation count, emoji count
+        review_len = len(user_input)
+        word_count = len(user_input.split())
+        exclam_count = user_input.count("!")
+        emoji_count_val = count_emojis(user_input)
+        
+        # Sentiment score using TextBlob
+        sentiment_score = TextBlob(user_input).sentiment.polarity
+
+        # Display results
+        st.markdown(f"### Review Sentiment: {emoji.get(label, '')} **{label}**")
+        st.markdown(f"Confidence: {confidence:.2f}%")
+
+# Review Analysis (Right side)
 with col2:
     st.markdown("""
     <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
         <h4 style='text-align:center;'>📊 Review Analysis</h4>
     </div>
     """, unsafe_allow_html=True)
-
-    sentiment_score = TextBlob(clean_text).sentiment.polarity
 
     st.markdown(f"""
     <div style='padding: 12px;'>
@@ -116,3 +149,56 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
+# Creating the DataFrame for the result
+output_df = pd.DataFrame([{
+            "Review": user_input,
+            "Prediction": label,
+            "Confidence": f"{confidence:.2f}%",
+            "Length": review_len,
+            "Word Count": word_count,
+            "Exclamation Count": exclam_count,
+            "Emoji Count": emoji_count_val,
+            "Sentiment Score": sentiment_score
+        }])
+
+# Download button for the result CSV
+col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+with col_dl2:
+    st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+
+# Footer with the app's information
+st.markdown("""
+<div style='text-align:center; padding-top: 10px;'>
+    <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
+</div>
+""", unsafe_allow_html=True)
+
+# Balloons animation for fun
+st.balloons()
+
+# Hide notification content (styling trick)
+st.markdown("""
+<style>
+canvas:has(+ div[data-testid="stNotificationContent"]) {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Styling for the download button
+st.markdown("""
+<style>
+div[data-testid="stDownloadButton"] > button {
+    background-color: #ff4b4b;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+div[data-testid="stDownloadButton"] > button:hover {
+    background-color: #ff1a1a;
+}
+</style>
+""", unsafe_allow_html=True)
