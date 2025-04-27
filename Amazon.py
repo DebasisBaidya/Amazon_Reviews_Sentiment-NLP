@@ -101,39 +101,52 @@ def handle_neutral_keywords(text, probs, neutral_keywords, confidence_threshold=
     else:
         return None, None
 
+# Ensure the label is in the correct format (string) and use the proper index for the confidence calculation
+def get_confidence_from_probas(probs, label_classes):
+    """
+    Get label and confidence from predicted probabilities.
+    """
+    label_index = np.argmax(probs)  # Find the class index with the highest probability
+    label = label_classes[label_index]  # Convert the index back to label
+    confidence = probs[label_index] * 100
+    return label, confidence
+
 # Header
-st.markdown(""" 
-<div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'> 
-    <h1>💬 Real-time Sentiment Classifier</h1> 
+st.markdown("""
+<div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
+    <h1>💬 Real-time Sentiment Classifier</h1>
     <p style='font-size:16px;'>Classify product reviews as <b style='color:green;'>Positive</b>, <b style='color:orange;'>Neutral</b>, or <b style='color:red;'>Negative</b></p>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Try Example Button Section (Retaining original styling)
+# Example Buttons
 st.markdown("""
-<hr>
-<div style="text-align: center;">
-    <h3>🎯 Try an Example Review</h3>
+<div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
+    <h4>📋 Try an example</h4>
+    <p style='font-size:14px;'>Click a button to auto-fill an example review.</p>
 </div>
 """, unsafe_allow_html=True)
 
-ol_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
+# Adding gap after the examples
+st.markdown("<br>", unsafe_allow_html=True)
+
+col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
 with col_ex2:
     col1, col2, col3 = st.columns(3)
     if col1.button("😃 Positive"):
         st.session_state.user_input = "Absolutely love this product! Works like a charm."
     if col2.button("😐 Neutral"):
         st.session_state.user_input = "It's okay, nothing too great or too bad."
-    if col3.button("😈 Negative"):
+    if col3.button("👿 Negative"):
         st.session_state.user_input = "Terrible experience. Waste of money."
 
-# Text input for user to enter review
+# Text input
 st.markdown("<div style='text-align:center;'><label style='font-size:16px;font-weight:bold;'>✍️ Enter a review to classify:</label></div>", unsafe_allow_html=True)
-user_input = st.text_area("", value=st.session_state.user_input, height=100, key="user_input", label_visibility="collapsed")
+user_input = st.text_area("", value=st.session_state.get("user_input", ""), height=100, key="user_input", label_visibility="collapsed")
 
-# Buttons for prediction and reset
+# Buttons
 col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
 with col_center:
     col1, col2 = st.columns(2)
@@ -173,7 +186,7 @@ if predict_clicked:
         label, confidence = handle_neutral_keywords(user_input, probs, neutral_keywords)
 
         if label is None:  # If neutral wasn't selected by keywords, use the class with highest probability
-            confidence = probs[label_classes.index(label)] * 100
+            label, confidence = get_confidence_from_probas(probs, label_classes)
 
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
@@ -192,34 +205,26 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
+        # Confidence Pie Chart - Correct alignment and positioning
+        st.markdown("<br>", unsafe_allow_html=True)
+
         # Confidence Breakdown Section
-        st.markdown("<br><div style='text-align:center;'><h3>📊 Confidence Breakdown</h3></div>", unsafe_allow_html=True)
+        col1, col2 = st.columns([1, 1])  # Side-by-side columns for layout consistency
+        with col1:
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px;'>
+                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+            </div>
+            """, unsafe_allow_html=True)
 
-        fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size for better visibility
+            fig, ax = plt.subplots(figsize=(6, 4))  # Adjusted size to match Review Analysis
 
-        # Sentiments and their corresponding probabilities
-        sentiments = ["Positive", "Neutral", "Negative"]
-        sentiment_probs = [probs[0], probs[1], probs[2]]
+            sentiments = ["Positive", "Neutral", "Negative"]
+            sentiment_probs = [probs[0], probs[1], probs[2]]
 
-        # Plotting the pie chart
-        ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90, colors=['#66b3ff', '#ffcc66', '#ff6666'])
-        ax.axis('equal')  # Equal aspect ratio ensures pie chart is circular.
-
-        # Show the plot in Streamlit
-        st.pyplot(fig)
-
-        # Review Analysis Section
-        st.markdown(f"""
-        <div style='padding: 12px;'>
-            <ul style='font-size:16px; line-height:1.8;'>
-                <li><b>📝 Review Length:</b> {review_len} characters</li>
-                <li><b>📚 Word Count:</b> {word_count}</li>
-                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+            ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', startangle=90)
+            ax.axis('equal')  # Equal aspect ratio ensures pie chart is circular.
+            st.pyplot(fig)
 
         # Creating the DataFrame for the result
         output_df = pd.DataFrame([{
