@@ -10,24 +10,21 @@ import nltk
 from scipy.sparse import hstack, csr_matrix
 import numpy as np
 import pandas as pd
-import time
-import matplotlib.pyplot as plt
-import os
 from textblob import TextBlob
+import os
 
 # Set page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
-def ensure_nltk_data():
-    resources = ["punkt", "stopwords", "wordnet", "omw-1.4", "punkt_tab"]
-    for resource in resources:
-        try:
-            nltk.data.find(f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}")
-        except LookupError:
-            nltk.download(resource)
+# Ensure NLTK data
+nltk_resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
+for resource in nltk_resources:
+    try:
+        nltk.data.find(f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}")
+    except LookupError:
+        nltk.download(resource)
 
-ensure_nltk_data()
-
+# Load models
 @st.cache_resource
 def load_models():
     required_files = ["neural_network.pkl", "vectorizer.pkl", "label_encoder.pkl"]
@@ -44,23 +41,18 @@ def load_models():
 
 model, vectorizer, label_encoder, scaler, scaling_used = load_models()
 
+# Preprocessing tools
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
+# Emojis for sentiments
 emoji = {
     "Positive": "😃✨💖",
     "Neutral": "😐🌀🤷",
     "Negative": "👿💢👎"
 }
 
-neutral_keywords = [
-    'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
-    'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
-    'couldn\u2019t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
-    'passable', 'acceptable', 'not great', 'nothing remarkable', 'alright-ish',
-    'just fine', 'could be worse', 'not bad, not good', 'somewhat okay', 'meh, could be better',
-    'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
-]
+# Functions for preprocessing
 
 def convert_ordinals(text):
     return re.sub(r'\b(\d+)(st|nd|rd|th)\b',
@@ -83,9 +75,11 @@ def count_emojis(text):
     import emoji
     return sum(1 for char in text if char in emoji.EMOJI_DATA)
 
+# Session state initialization
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 
+# Page header
 st.markdown("""
 <div style='text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px;'>
     <h1>💬 Real-time Sentiment Classifier</h1>
@@ -93,57 +87,83 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Review Analysis (Right side)
+# Layout with two columns
 col1, col2 = st.columns(2)
-with col2:
-    st.markdown("""
-    <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-        <h4 style='text-align:center;'>📊 Review Analysis</h4>
-    </div>
-    """, unsafe_allow_html=True)
 
-    sentiment_score = TextBlob(clean_text).sentiment.polarity
+with col1:
+    user_input = st.text_area("Enter your review:", value=st.session_state.user_input, height=200)
 
-    st.markdown(f"""
-    <div style='padding: 12px;'>
-        <ul style='font-size:16px; line-height:1.8;'>
-            <li><b>📝 Review Length:</b> {review_len} characters</li>
-            <li><b>📚 Word Count:</b> {word_count}</li>
-            <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-            <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-            <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+if user_input:
+    clean_text = preprocess_review(user_input)
 
-  # Creating the DataFrame for the result
-output_df = pd.DataFrame([{
-            "Review": user_input,
-            "Prediction": label,
-            "Confidence": f"{confidence:.2f}%",
-            "Length": review_len,
-            "Word Count": word_count,
-            "Exclamation Count": exclam_count,
-            "Emoji Count": emoji_count_val,
-            "Sentiment Score": sentiment_score
-        }])
+    review_len = len(user_input)
+    word_count = len(user_input.split())
+    exclam_count = user_input.count('!')
+    emoji_count_val = count_emojis(user_input)
 
-# Download button for the result CSV
-col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
-with col_dl2:
-    st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+    # Prepare data for prediction
+    vectorized_text = vectorizer.transform([clean_text])
+    if scaling_used:
+        extra_features = np.array([[review_len, word_count, exclam_count, emoji_count_val]])
+        extra_features = scaler.transform(extra_features)
+        input_data = hstack([vectorized_text, csr_matrix(extra_features)])
+    else:
+        input_data = vectorized_text
 
-# Footer with the app's information
+    prediction = model.predict(input_data)
+    confidence = np.max(model.predict_proba(input_data)) * 100
+    label = label_encoder.inverse_transform(prediction)[0]
+
+    with col2:
+        st.markdown("""
+        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+            <h4 style='text-align:center;'>📊 Review Analysis</h4>
+        </div>
+        """, unsafe_allow_html=True)
+
+        sentiment_score = TextBlob(clean_text).sentiment.polarity
+
+        st.markdown(f"""
+        <div style='padding: 12px;'>
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+                <li><b>🔮 Predicted Sentiment:</b> {label} {emoji[label]}</li>
+                <li><b>✅ Confidence:</b> {confidence:.2f}%</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Create output DataFrame
+    output_df = pd.DataFrame([{
+        "Review": user_input,
+        "Prediction": label,
+        "Confidence": f"{confidence:.2f}%",
+        "Length": review_len,
+        "Word Count": word_count,
+        "Exclamation Count": exclam_count,
+        "Emoji Count": emoji_count_val,
+        "Sentiment Score": sentiment_score
+    }])
+
+    # Download button
+    col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
+    with col_dl2:
+        st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
+
+    st.balloons()
+
+# Footer
 st.markdown("""
 <div style='text-align:center; padding-top: 10px;'>
     <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
 </div>
 """, unsafe_allow_html=True)
 
-# Balloons animation for fun
-st.balloons()
-
-# Hide notification content (styling trick)
+# Hide Streamlit notifications
 st.markdown("""
 <style>
 canvas:has(+ div[data-testid="stNotificationContent"]) {
@@ -152,7 +172,7 @@ canvas:has(+ div[data-testid="stNotificationContent"]) {
 </style>
 """, unsafe_allow_html=True)
 
-# Styling for the download button
+# Styling for download button
 st.markdown("""
 <style>
 div[data-testid="stDownloadButton"] > button {
