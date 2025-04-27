@@ -202,8 +202,27 @@ if predict_clicked:
 # Side-by-side output boxes with equal width columns
 col1, col2 = st.columns([1, 1])  # Ensuring both columns have equal width
 
-# Confidence breakdown with pie chart
+# Display review analysis on the left
 with col1:
+    st.markdown("""
+        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+            <h4 style='text-align:center;'>📊 Review Analysis</h4>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+        <div style='padding: 12px;'>
+            <ul style='font-size:16px; line-height:1.8;'>
+                <li><b>📝 Review Length:</b> {review_len} characters</li>
+                <li><b>📚 Word Count:</b> {word_count}</li>
+                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
+                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
+                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
+
+# Confidence breakdown with pie chart on the right
+with col2:
     st.markdown("""
     <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
         <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
@@ -219,74 +238,19 @@ with col1:
     ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     st.pyplot(fig)
 
-# Display review analysis on the right
-with col2:
-    st.markdown("""
-        <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
-            <h4 style='text-align:center;'>📊 Review Analysis</h4>
-    """, unsafe_allow_html=True)
-    st.markdown(f"""
-        <div style='padding: 12px;'>
-            <ul style='font-size:16px; line-height:1.8;'>
-                <li><b>📝 Review Length:</b> {review_len} characters</li>
-                <li><b>📚 Word Count:</b> {word_count}</li>
-                <li><b>❗❗ Exclamation Marks:</b> {exclam_count}</li>
-                <li><b>😃 Emoji Count:</b> {emoji_count_val}</li>
-                <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
-            </ul>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Create DataFrame for results
-    output_df = pd.DataFrame([{
-        "Review": user_input,
-        "Prediction": label,
-        "Confidence": f"{confidence:.2f}%",
-        "Length": review_len,
-        "Word Count": word_count,
-        "Exclamation Count": exclam_count,
-        "Emoji Count": emoji_count_val,
-        "Sentiment Score": sentiment_score
-    }])
-
-    # Download button for result CSV
+# Download button below both columns
+with st.container():
     col_dl1, col_dl2, col_dl3 = st.columns([2, 6, 2])
     with col_dl2:
+        output_df = pd.DataFrame([{
+            "Review": user_input,
+            "Prediction": label,
+            "Confidence": f"{confidence:.2f}%",
+            "Length": review_len,
+            "Word Count": word_count,
+            "Exclamation Count": exclam_count,
+            "Emoji Count": emoji_count_val,
+            "Sentiment Score": sentiment_score
+        }])
+
         st.download_button("⬇️ Download Result as CSV", output_df.to_csv(index=False), file_name="review_prediction.csv", use_container_width=True)
-
-    # Footer with app info
-    st.markdown("""
-    <div style='text-align:center; padding-top: 10px;'>
-        <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Balloons animation
-    st.balloons()
-
-    # Hide notification content trick (styling)
-    st.markdown("""
-    <style>
-    canvas:has(+ div[data-testid="stNotificationContent"]) {
-        display: none;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Custom button styling
-    st.markdown("""
-    <style>
-    div[data-testid="stDownloadButton"] > button {
-        background-color: #ff4b4b;
-        color: white;
-        font-weight: bold;
-        border-radius: 10px;
-        border: none;
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-    div[data-testid="stDownloadButton"] > button:hover {
-        background-color: #ff1a1a;
-    }
-    </style>
-    """, unsafe_allow_html=True)
