@@ -379,5 +379,5 @@ if st.session_state["prediction_result"] is not None:
         <span style='font-size:13px; color: gray;'>🤖 Powered by Neural Network | TF-IDF + Engineered Features</span>
     </div
 
-    # Celebrate prediction with balloons animation
-    st.balloons()
+        # Celebrate prediction with balloons animation
+        st.balloons()
