@@ -64,7 +64,7 @@ emoji_dict = {
 neutral_keywords = [
     'okay', 'fine', 'average', 'meh', 'just okay', 'not that much', 'not bad',
     'mediocre', 'so-so', 'alright', 'nothing special', 'kind of', 'could be better',
-    'couldn\u2019t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
+    'couldn’t care less', 'indifferent', 'okay-ish', 'neither good nor bad',
     'passable', 'acceptable', 'not great', 'nothing remarkable', 'alright-ish',
     'just fine', 'could be worse', 'not bad, not good', 'somewhat okay', 'meh, could be better',
     'nothing to complain about', 'barely noticeable', 'average at best', 'mediocre at best', 'tolerable'
@@ -114,6 +114,9 @@ with st.container():
         <p style='font-size:14px;'>Click any button below to auto-feed the example in the input box.</p>
     </div>
     """, unsafe_allow_html=True)
+
+# Add space after text and above buttons
+st.markdown("<br>", unsafe_allow_html=True)
 
     col_ex1, col_ex2, col_ex3 = st.columns([2, 6, 2])
     with col_ex2:
@@ -195,9 +198,17 @@ if predict_clicked:
 
         # Emoji count
         emoji_count_val = analyze_emojis(user_input)  # Get emoji count in the review
-
-        # Display the results
-        st.markdown(f"""
+        
+# Side-by-side output boxes
+col1, col2 = st.columns(2)
+        
+# Display the results
+    with col1:
+        with st.container():
+         st.markdown("""
+                <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                    <h4 style='text-align:center;'>📊 Review Analysis</h4>
+                """, unsafe_allow_html=True)
         <div style='padding: 12px;'>
             <ul style='font-size:16px; line-height:1.8;'>
                 <li><b>📝 Review Length:</b> {review_len} characters</li>
@@ -209,6 +220,12 @@ if predict_clicked:
         </div>
         """, unsafe_allow_html=True)
 
+    with col2:
+            st.markdown("""
+            <div style='border: 1px solid #ddd; border-radius: 10px; padding: 20px; width: 100%;'>
+                <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
+            </div>
+            """, unsafe_allow_html=True)
         # Create pie chart for confidence breakdown
         fig, ax = plt.subplots()
         labels = ['Positive', 'Neutral', 'Negative']
