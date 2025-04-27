@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 import emoji
 import os
-import io
 
 # Set Streamlit page config
 st.set_page_config(page_title="Sentiment Classifier", layout="centered")
@@ -101,12 +100,11 @@ def get_confidence_from_probas(probs, label_classes):
     confidence = probs[label_index] * 100
     return label, confidence
 
-# Initialize session state keys for controlled input and reset flag
+# Initialize session state keys for user input and input widget key
 if "user_input" not in st.session_state:
     st.session_state["user_input"] = ""
-
-if "reset_triggered" not in st.session_state:
-    st.session_state["reset_triggered"] = False
+if "input_key" not in st.session_state:
+    st.session_state["input_key"] = 0
 
 # Header
 st.markdown("""
@@ -138,13 +136,13 @@ with col_ex2:
     if col3.button("👿 Negative"):
         st.session_state["user_input"] = "Terrible experience. Waste of money."
 
-# Text input with controlled value
+# Text input with dynamic key to force reset
 user_input = st.text_area(
-    "",
+    "Enter your review here:",
     value=st.session_state["user_input"],
+    key=f"user_input_{st.session_state['input_key']}",
     height=100,
-    key="user_input",
-    label_visibility="collapsed"
+    label_visibility="visible"
 )
 
 # Buttons below the input box
@@ -152,15 +150,12 @@ col_left, col_center, col_right = st.columns([1.5, 2, 1.5])
 with col_center:
     col1, col2 = st.columns(2)
     predict_clicked = col1.button("🔍 Predict", use_container_width=True)
-    clear_clicked = col2.button("🧹 Reset All", use_container_width=True)
+    reset_clicked = col2.button("🧹 Reset All", use_container_width=True)
 
-if clear_clicked:
+# Reset logic: clear input and increment input_key to reset widget state
+if reset_clicked:
     st.session_state["user_input"] = ""
-    st.session_state["reset_triggered"] = True
-
-# After displaying text area, reset the flag so it only clears once
-if st.session_state["reset_triggered"]:
-    st.session_state["reset_triggered"] = False
+    st.session_state["input_key"] += 1
 
 # Prediction
 if predict_clicked:
