@@ -151,7 +151,9 @@ if predict_clicked:
         label_classes = list(label_encoder.classes_)
         label = label_encoder.inverse_transform([prediction])[0] if isinstance(prediction, (int, np.integer)) else prediction
 
-        if probs[1] >= 0.30 or any(re.search(rf'\b{re.escape(kw)}\b', user_input.lower()) for kw in neutral_keywords):
+        # Calculate the neutral sentiment based on the probability threshold
+        neutral_threshold = 0.30  # Adjust the threshold if necessary
+        if probs[1] >= neutral_threshold or any(re.search(rf'\b{re.escape(kw)}\b', user_input.lower()) for kw in neutral_keywords):
             label = 'Neutral'
             confidence = probs[1] * 100
         else:
@@ -160,8 +162,8 @@ if predict_clicked:
         sentiment_score = TextBlob(clean_text).sentiment.polarity
         emoji_count_val = analyze_emojis(user_input)
 
-        if label == "Positive":
-            st.balloons()
+        
+        st.balloons()
 
         # -- Prediction result
         st.markdown(f"""
@@ -202,9 +204,13 @@ if predict_clicked:
                 <h4 style='text-align:center;'>📈 Confidence Breakdown</h4>
             """, unsafe_allow_html=True)
 
-            fig, ax = plt.subplots(figsize=(2.5, 2)) 
+            fig, ax = plt.subplots(figsize=(3, 3)) 
             sentiments = ["Positive", "Neutral", "Negative"]
-            sentiment_probs = [probs[label_classes.index('Positive')], probs[label_classes.index('Neutral')], probs[label_classes.index('Negative')]]
+            sentiment_probs = [
+                probs[label_classes.index('Positive')],
+                probs[label_classes.index('Neutral')],
+                probs[label_classes.index('Negative')]
+            ]
             colors = ['#28a745', '#ffc107', '#dc3545']
             ax.pie(sentiment_probs, labels=sentiments, autopct='%1.1f%%', colors=colors, startangle=90)
             ax.axis('equal')
@@ -219,7 +225,7 @@ if predict_clicked:
                 <ul style='font-size:16px;'>
                     <li><b>📝 Length:</b> {review_len} characters</li>
                     <li><b>📚 Words:</b> {word_count}</li>
-                    <li><b>❗ Exclamations:</b> {exclam_count}</li>
+                    <li><b>❗❗ Exclamations:</b> {exclam_count}</li>
                     <li><b>😃 Emojis:</b> {emoji_count_val}</li>
                     <li><b>❤️ Sentiment Score:</b> {sentiment_score:.3f}</li>
                 </ul>
