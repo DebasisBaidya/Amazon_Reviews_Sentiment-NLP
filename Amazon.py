@@ -132,7 +132,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("""
 <div style='border: 1px solid #ddd; border-radius: 10px; padding: 15px; text-align:center;'>
     <h4>📋 Try an example</h4>
-    <p style='font-size:14px;'>Click a button to auto-fill an example review.</p>
+    <p style='font-size:14px;'>Click any button below to auto-fill the example in the input box.</p>
 </div>
 """, unsafe_allow_html=True)
 
