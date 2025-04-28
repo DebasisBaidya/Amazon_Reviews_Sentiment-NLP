@@ -20,7 +20,7 @@ st.set_page_config(page_title="Sentiment Classifier", layout="centered")
 
 # Function to ensure NLTK resources are available
 def ensure_nltk_data():
-    resources = ["punkt", "stopwords", "wordnet", "omw-1.4"]
+    resources = ["punkt", "stopwords", "wordnet", "omw-1.4", "punkt_tab"]
     for resource in resources:
         try:
             nltk.data.find(f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}")
