@@ -260,9 +260,9 @@ if st.session_state["prediction_result"] is not None:
     <div style='text-align:center; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px auto; max-width: 600px;'>
         <h2 style='color:#0099ff;'>📢 Prediction Result</h2>
         <div style='font-size:20px; color:{"green" if label == "Positive" else "orange" if label == "Neutral" else "red"};'>
-            {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence: {confidence:.2f}%)</span>
+            {"😃 <b>Positive</b>" if label == "Positive" else "😐 <b>Neutral</b>" if label == "Neutral" else "👿 <b>Negative</b>"} <span style='font-size:16px;'>(Confidence Score: {confidence:.2f}%)</span>
         </div>
-        <div style='margin-top: 5px;'>{'✅ Positive review' if label == "Positive" else '🌀 Neutral review' if label == "Neutral" else '⚠️ Negative review'}</div>
+        <div style='margin-top: 5px;'>{'✅ Positive Tone' if label == "Positive" else '🌀 Neutral Tone' if label == "Neutral" else '⚠️ Negative Tone'}</div>
     </div>
     """, unsafe_allow_html=True)
 
