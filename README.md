@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This project focuses on classifying Amazon product reviews into **Positive**, **Neutral**, or **Negative** sentiments using NLP and machine learning. The app is built using **Streamlit** and allows for real-time sentiment prediction with visual feedback.
+This project focuses on classifying Amazon product reviews into **Positive**, **Neutral**, or **Negative** sentiments using NLP and Machine/Deep Learning. The app is built using **Streamlit** and allows for real-time sentiment prediction with visual feedback.
 
 - 🚀 **Live App**: [Click to Open App](https://debasis-baidya-amazonreviewssentiment-nlp.streamlit.app)
 - 📺 **All About My App**: [App Usage Demo](https://youtu.be/8qG7-s3eflk)
@@ -89,7 +89,7 @@ In today’s e-commerce world, customer reviews hold massive value. But manually
 
 ## 🙋‍♂️ About Me
 
-I made this project to turn a simple machine learning model into something anyone can actually use. Instead of just running code in a notebook, I wanted to build a working web app where you can paste a review and instantly see what the model thinks.  
+I made this project to turn a  Machine/Deep Learning model into something anyone can actually use. Instead of just running code in a notebook, I wanted to build a working web app where you can paste a review and instantly see what the model thinks.  
 
 It was a fun way to learn how to combine data cleaning, model training, and app building — all in one project.
 
