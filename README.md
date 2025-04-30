@@ -1,4 +1,4 @@
-# 📦 Amazon Reviews Sentiment Analyzer (NLP Project)
+# 📦 Amazon Reviews Sentiment Analysis (NLP Project)
 
 [![Live App](https://img.shields.io/badge/Live%20App-Streamlit-brightgreen?logo=streamlit)](https://debasis-baidya-amazonreviewssentiment-nlp.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
