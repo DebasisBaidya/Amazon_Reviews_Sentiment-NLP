@@ -6,7 +6,7 @@
 
 This project focuses on classifying Amazon product reviews into **Positive**, **Neutral**, or **Negative** sentiments using NLP and machine learning. The app is built using **Streamlit** and allows for real-time sentiment prediction with visual feedback.
 
-- 🚀 **Live App**: [Click Here to Open 📦 Amazon Reviews Sentiment Analyzer 🛒💳](https://debasis-baidya-amazonreviewssentiment-nlp.streamlit.app)
+- 🚀 **Live App**: [Click to Open App](https://debasis-baidya-amazonreviewssentiment-nlp.streamlit.app)
 - 📺 **All About My App**: [App Usage Demo](https://youtu.be/8qG7-s3eflk)
 ---
 
