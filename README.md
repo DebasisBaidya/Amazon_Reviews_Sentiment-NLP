@@ -79,11 +79,11 @@ In today’s e-commerce world, customer reviews hold massive value. But manually
 
 - `Amazon_Sentiment_Analysis.ipynb` – Main Jupyter notebook: preprocessing, modeling, evaluation
 - `Amazon.py` – Streamlit app to deploy the classifier with an interactive UI
-- `neural_network.pkl` – Trained MLPClassifier model
+- `neural_network.pkl` – Trained MLPClassifier (Neural Network) model
 - `vectorizer.pkl` – Saved TF-IDF vectorizer for consistent inputs
 - `label_encoder.pkl` – Encodes/decodes sentiment labels
 - `scaler.pkl` – Scaler used for numerical feature normalization
-- `requirements.txt` – All required libraries for Streamlit & ML
+- `requirements.txt` – All required libraries for Streamlit
 
 ---
 
