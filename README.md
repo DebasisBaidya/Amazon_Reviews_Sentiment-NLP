@@ -67,8 +67,8 @@ In today’s e-commerce world, customer reviews hold massive value. But manually
 ## 📸 App Preview
 
 <p align="center">
-  <img src="screenshots/app_screenshot_1.png" alt="App Screenshot 1" width="45%" style="margin-right:10px;">
-  <img src="screenshots/app_screenshot_2.png" alt="App Screenshot 2" width="45%">
+  <img src="app_screenshot_1.png" alt="App Screenshot 1" width="45%" style="margin-right:10px;">
+  <img src="app_screenshot_2.png" alt="App Screenshot 2" width="45%">
 </p>
 
 > Screenshot of Hosted Streamlit App in action.
