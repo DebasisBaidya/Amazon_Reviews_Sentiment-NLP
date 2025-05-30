@@ -3,6 +3,15 @@
 [![Live App](https://img.shields.io/badge/Live%20App-Streamlit-brightgreen?logo=streamlit)](https://debasis-baidya-amazonreviewssentiment-nlp.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  <a href="https://www.linkedin.com/in/debasisbaidya" target="_blank">
+    <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin&logoColor=white&style=flat" />
+  </a>
+  <a href="mailto:speak2debasis@gmail.com">
+    <img src="https://img.shields.io/badge/Gmail-Mail_Me-red?logo=gmail&logoColor=white&style=flat" />
+  </a>
+  <a href="https://api.whatsapp.com/send?phone=918013316086&text=Hi%20Debasis!">
+    <img src="https://img.shields.io/badge/WhatsApp-Chat-green?logo=whatsapp&logoColor=white&style=flat" />
+  </a>
 
 This project focuses on classifying Amazon product reviews into **Positive**, **Neutral**, or **Negative** sentiments using NLP and Machine/Deep Learning. The app is built using **Streamlit** and allows for real-time sentiment prediction with visual feedback.
 
